@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "导航书签 (DaoHangShuQian)",
+  "version": "1.0.0",
+  "description": "一个功能完善的浏览器书签导航插件",
+  "permissions": [
+    "storage",
+    "bookmarks",
+    "tabs",
+    "notifications"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_popup": "index.html"
+  },
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "background": {
+    "service_worker": "background.ts",
+    "type": "module"
+  }
+}
