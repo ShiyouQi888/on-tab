@@ -29,10 +29,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
       } else {
         await authService.signUp(email, password);
         setSuccessMsg('注册成功！一封验证邮件已发送至您的邮箱，请前往查看并点击链接完成验证。验证后即可返回此处登录。');
-        // 注册成功后不再自动切换，让用户有充足时间看清楚提示
       }
     } catch (err: any) {
-      setError(err.message || '操作失败');
+      console.error('Auth error:', err);
+      let message = err.message || '操作失败';
+      if (message === 'Failed to fetch') {
+        message = '网络连接失败，请检查您的网络连接或 Supabase 配置是否正确。';
+      }
+      setError(message);
     } finally {
       setLoading(false);
     }
