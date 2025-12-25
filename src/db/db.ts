@@ -2,6 +2,7 @@ import Dexie, { type Table } from 'dexie';
 
 export interface Bookmark {
   id: string;
+  userId: string; // 添加用户ID字段
   title: string;
   url: string;
   icon?: string;
@@ -16,16 +17,19 @@ export interface Bookmark {
 
 export interface Category {
   id: string;
+  userId: string; // 添加用户ID字段
   name: string;
   icon?: string;
   order: number;
   createdAt: number;
   updatedAt: number;
   deleted: number;
+  syncStatus: 'synced' | 'pending' | 'error';
 }
 
 export interface SyncQueue {
   id?: number;
+  userId: string; // 添加用户ID字段
   action: 'create' | 'update' | 'delete';
   entityType: 'bookmark' | 'category';
   entityId: string;
@@ -40,10 +44,10 @@ export class AppDatabase extends Dexie {
 
   constructor() {
     super('BookmarkNavDB');
-    this.version(3).stores({
-      bookmarks: 'id, title, url, categoryId, *tags, updatedAt, deleted',
-      categories: 'id, name, order, updatedAt, deleted',
-      syncQueue: '++id, entityId, timestamp'
+    this.version(4).stores({
+      bookmarks: 'id, userId, title, url, categoryId, *tags, updatedAt, deleted',
+      categories: 'id, userId, name, order, updatedAt, deleted',
+      syncQueue: '++id, userId, entityId, timestamp'
     });
   }
 }

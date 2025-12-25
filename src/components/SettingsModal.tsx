@@ -53,7 +53,17 @@ interface SettingsModalProps {
   onAuthOpen: () => void;
   currentWallpaper: string;
   onWallpaperChange: (url: string) => void;
+  onUserUpdate?: (user: any) => void;
 }
+
+const AVATAR_STYLES = [
+  { id: 'avataaars', label: '人物' },
+  { id: 'bottts', label: '机器人' },
+  { id: 'adventurer', label: '冒险者' },
+  { id: 'fun-emoji', label: '表情' },
+  { id: 'lorelei', label: '手绘' },
+  { id: 'pixel-art', label: '像素' },
+];
 
 const SortableCategoryItem = ({ cat, onDelete }: { cat: any, onDelete: (id: string) => void }) => {
   const {
@@ -101,13 +111,26 @@ const SortableCategoryItem = ({ cat, onDelete }: { cat: any, onDelete: (id: stri
   );
 };
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onAuthOpen, currentWallpaper, onWallpaperChange }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onAuthOpen, currentWallpaper, onWallpaperChange, onUserUpdate }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const wallpaperFileRef = useRef<HTMLInputElement>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [activeTab, setActiveTab] = useState<'categories' | 'appearance' | 'migration' | 'feedback' | 'business' | 'contact' | 'about'>('categories');
   const [customWallpaper, setCustomWallpaper] = useState(currentWallpaper);
+  const [avatarSeed, setAvatarSeed] = useState(user?.id || Math.random().toString());
+  const [avatarStyle, setAvatarStyle] = useState('avataaars');
+
+  const handleAvatarChange = async (style: string, seed: string) => {
+    if (!user) return;
+    const newAvatar = `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}`;
+    try {
+      const { user: updatedUser } = await authService.updateProfile({ avatar_url: newAvatar });
+      if (onUserUpdate) onUserUpdate(updatedUser);
+    } catch (err) {
+      console.error('Failed to update avatar:', err);
+    }
+  };
 
   const handleWallpaperUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -280,13 +303,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
             <div className="flex items-center gap-3">
               {user ? (
                 <>
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                    <User size={18} />
+                  <div className="relative group">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 overflow-hidden border-2 border-white shadow-sm group-hover:border-blue-200 transition-all">
+                      {user.user_metadata?.avatar_url ? (
+                        <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        <User size={20} />
+                      )}
+                    </div>
+                    <div className="absolute top-0 left-0 w-full h-full bg-black/40 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
+                      <RefreshCw size={14} className="text-white animate-spin-slow" />
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">已登录账户</div>
-                    <div className="text-sm font-bold text-gray-700 truncate max-w-[200px]">{user.email}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider leading-tight">已登录账户</div>
+                    <div className="text-sm font-bold text-gray-700 truncate">{user.email}</div>
                   </div>
+                  <button 
+                    onClick={async () => {
+                      await authService.signOut();
+                      onClose();
+                    }}
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                    title="退出登录"
+                  >
+                    <LogOut size={18} />
+                  </button>
                 </>
               ) : (
                 <>
@@ -382,87 +424,84 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
             )}
 
             {activeTab === 'appearance' && (
-              <div className="animate-in slide-in-from-right-4 duration-300">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600">
-                    <Palette size={24} />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-800">外观设置</h3>
-                    <p className="text-sm text-gray-500">个性化您的浏览器主页外观</p>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100">
-                    <div className="flex items-center gap-3 mb-4">
-                      <ImageIcon size={18} className="text-gray-400" />
-                      <h4 className="font-bold text-gray-700">背景壁纸</h4>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      <div className="flex gap-3">
-                        <input 
-                          type="text" 
-                          value={customWallpaper}
-                          onChange={(e) => setCustomWallpaper(e.target.value)}
-                          placeholder="输入壁纸图片 URL..."
-                          className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm"
-                        />
+              <div className="space-y-8 animate-in slide-in-from-right-4 duration-300">
+                <section>
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <User size={20} className="text-blue-500" />
+                    个性头像
+                  </h3>
+                  <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                    <div className="flex flex-col items-center gap-6">
+                      <div className="relative group">
+                        <div className="w-24 h-24 rounded-full bg-white shadow-xl border-4 border-white overflow-hidden flex items-center justify-center">
+                          {user?.user_metadata?.avatar_url ? (
+                            <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                          ) : (                
+                            <User size={48} className="text-gray-300" />
+                          )}
+                        </div>
                         <button 
-                          onClick={() => onWallpaperChange(customWallpaper)}
-                          className="px-6 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-all shadow-md shadow-purple-100 text-sm"
+                          onClick={() => {
+                            const newSeed = Math.random().toString(36).substring(7);
+                            setAvatarSeed(newSeed);
+                            handleAvatarChange(avatarStyle, newSeed);
+                          }}
+                          className="absolute -right-2 -bottom-2 p-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 active:scale-95"
+                          title="随机生成"
                         >
-                          应用
+                          <RefreshCw size={16} />
                         </button>
                       </div>
 
-                      <div className="flex flex-wrap gap-3">
+                      <div className="w-full space-y-4">
+                        <div className="grid grid-cols-3 gap-2">
+                          {AVATAR_STYLES.map(style => (
+                            <button
+                              key={style.id}
+                              onClick={() => {
+                                setAvatarStyle(style.id);
+                                handleAvatarChange(style.id, avatarSeed);
+                              }}
+                              className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
+                                avatarStyle === style.id 
+                                  ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-100' 
+                                  : 'bg-white text-gray-600 border-gray-100 hover:border-blue-200 hover:bg-blue-50/50'
+                              }`}
+                            >
+                              {style.label}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-center text-[10px] text-gray-400 font-medium">
+                          基于 DiceBear 开源头像库生成
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section>
+                  <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <ImageIcon size={20} className="text-blue-500" />
+                    壁纸设置
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="relative aspect-video rounded-2xl overflow-hidden group shadow-lg border border-gray-100">
+                      <img src={customWallpaper} alt="Current Wallpaper" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <button 
                           onClick={() => wallpaperFileRef.current?.click()}
-                          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all"
+                          className="px-6 py-2.5 bg-white text-gray-900 rounded-xl font-bold text-sm shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
                         >
-                          <Upload size={16} className="text-purple-600" />
-                          上传本地图片
+                          <Upload size={18} />
+                          更换壁纸
                         </button>
-                        <input 
-                          type="file" 
-                          ref={wallpaperFileRef}
-                          onChange={handleWallpaperUpload}
-                          accept="image/*"
-                          className="hidden"
-                        />
-                        
-                        <div className="flex items-center gap-4">
-                          <button 
-                            onClick={() => {
-                              // Randomly picked from curated list in App.tsx logic 
-                              // we just show a tip here since the logic is in parent
-                            }}
-                            className="flex items-center gap-2 text-sm text-purple-600 font-bold hover:bg-purple-50 px-3 py-2 rounded-lg transition-all"
-                          >
-                            <RefreshCw size={16} />
-                            提示：点击页面顶部的“拉绳”可随机更换
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="mt-4">
-                        <p className="text-xs text-gray-400 mb-3 uppercase tracking-wider font-bold">当前预览</p>
-                        <div className="relative aspect-video rounded-xl overflow-hidden border-2 border-white shadow-md bg-gray-200">
-                          <img 
-                            src={customWallpaper} 
-                            alt="Wallpaper Preview" 
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800';
-                            }}
-                          />
-                        </div>
                       </div>
                     </div>
+                    <input type="file" ref={wallpaperFileRef} onChange={handleWallpaperUpload} accept="image/*" className="hidden" />
+                    <p className="text-xs text-gray-400 font-medium px-2">建议分辨率：1920x1080，支持 JPG、PNG、WebP 格式。</p>
                   </div>
-                </div>
+                </section>
               </div>
             )}
 

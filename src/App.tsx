@@ -104,6 +104,8 @@ function App() {
   const [selectedSearchEngine, setSelectedSearchEngine] = useState(SEARCH_ENGINES[0]);
   const [isSearchEngineMenuOpen, setIsSearchEngineMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const userAvatar = user?.user_metadata?.avatar_url;
+
   const [syncing, setSyncing] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -164,7 +166,7 @@ function App() {
   
   const categories = useLiveQuery(
     () => bookmarkService.getAllCategories(),
-    []
+    [user?.id]
   ) || [];
 
   const bookmarks = useLiveQuery(
@@ -175,7 +177,7 @@ function App() {
       });
       return items;
     },
-    [debouncedQuery, selectedCategoryId]
+    [debouncedQuery, selectedCategoryId, user?.id]
   ) || [];
 
   useEffect(() => {
@@ -202,9 +204,21 @@ function App() {
 
     try {
       checkServiceWorker();
-      authService.getCurrentUser().then(setUser);
+      authService.getCurrentUser().then(user => {
+        setUser(user);
+        if (user) {
+          // 登录后立即执行一次全量同步
+          handleSync();
+        }
+      });
+      
       const authResponse = authService.onAuthStateChange((_event, session) => {
-        setUser(session?.user ?? null);
+        const newUser = session?.user ?? null;
+        setUser(newUser);
+        if (newUser) {
+          // 状态变更（如登录）时也执行一次同步
+          handleSync();
+        }
       });
       
       const subscription = authResponse?.data?.subscription;
@@ -245,10 +259,14 @@ function App() {
 
   const handleSync = async () => {
     if (!user) return;
+    if (syncing) return; // 防止 UI 层重复触发
     setSyncing(true);
     try {
       const pulledCount = await syncService.sync();
-      showToast(pulledCount > 0 ? `同步成功，获取了 ${pulledCount} 条更新` : '数据已是最新', 'success');
+      // 只有当真正有数据更新时才显示通知，或者如果是手动点击同步
+      if (pulledCount > 0) {
+        showToast(`同步成功，获取了 ${pulledCount} 条更新`, 'success');
+      }
     } catch (err) {
       console.error('Sync failed', err);
       showToast('同步失败，请检查网络连接', 'error');
@@ -399,10 +417,14 @@ function App() {
       {/* Left Sidebar Navigation */}
       <div className="fixed left-6 top-1/2 -translate-y-1/2 w-16 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl py-6 flex flex-col items-center z-40 group hover:w-48 transition-all duration-300 overflow-hidden shadow-2xl">
         <div 
-          onClick={() => !user && setIsAuthOpen(true)}
-          className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-6 cursor-pointer hover:bg-white/30 transition-colors shrink-0"
+          onClick={() => !user ? setIsAuthOpen(true) : setIsSettingsOpen(true)}
+          className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-6 cursor-pointer hover:bg-white/30 transition-colors shrink-0 overflow-hidden"
         >
-          <User className="text-white" size={24} />
+          {userAvatar ? (
+            <img src={userAvatar} alt="Avatar" className="w-full h-full object-cover" />
+          ) : (
+            <User className="text-white" size={24} />
+          )}
         </div>
         
         <div className="w-8 h-[1px] bg-white/10 mb-4 shrink-0" />
@@ -421,32 +443,26 @@ function App() {
           </button>
 
           {categories.map(cat => (
-            <button
+            <div
               key={cat.id}
-              onClick={() => setSelectedCategoryId(cat.id)}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                handleEditCategory(cat);
-              }}
-              className={`w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg transition-all duration-300 group/cat relative ${selectedCategoryId === cat.id ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
+              className="w-[calc(100%-16px)] mx-2 relative group/cat"
             >
-              <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-                {getCategoryIcon(cat.icon)}
-              </div>
-              <span className="whitespace-nowrap font-medium text-sm truncate opacity-0 group-hover:opacity-100 transition-all duration-300 flex-1 text-left ml-1">
-                {cat.name}
-              </span>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteCategoryFromSidebar(cat.id);
+              <button
+                onClick={() => setSelectedCategoryId(cat.id)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  handleEditCategory(cat);
                 }}
-                className="absolute right-2 opacity-0 group-hover/cat:opacity-100 p-1 hover:text-red-400 transition-all"
-                title="删除分类"
+                className={`w-full flex items-center py-2 rounded-lg transition-all duration-300 ${selectedCategoryId === cat.id ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
               >
-                <X size={14} />
+                <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
+                  {getCategoryIcon(cat.icon)}
+                </div>
+                <span className="whitespace-nowrap font-medium text-sm truncate opacity-0 group-hover:opacity-100 transition-all duration-300 flex-1 text-left ml-1">
+                  {cat.name}
+                </span>
               </button>
-            </button>
+            </div>
           ))}
         </div>
 
@@ -622,36 +638,6 @@ function App() {
             </div>
           </div>
 
-          {/* Categories (Tabs) */}
-          <div className="flex gap-4 mb-10 overflow-x-auto no-scrollbar w-full justify-center">
-            <button
-              onClick={() => setSelectedCategoryId(undefined)}
-              className={`px-6 py-2.5 rounded-lg text-[13px] font-bold transition-all backdrop-blur-md border ${
-                selectedCategoryId === undefined 
-                  ? 'bg-white text-blue-600 border-white shadow-lg scale-105' 
-                  : 'bg-white/20 text-white border-white/10 hover:bg-white/30 hover:scale-105'
-              }`}
-            >
-              全部
-            </button>
-            {categories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategoryId(cat.id)}
-                className={`px-6 py-2.5 rounded-lg text-[13px] font-bold transition-all backdrop-blur-md border flex items-center gap-2 ${
-                  selectedCategoryId === cat.id 
-                    ? 'bg-white text-blue-600 border-white shadow-lg scale-105' 
-                    : 'bg-white/20 text-white border-white/10 hover:bg-white/30 hover:scale-105'
-                }`}
-              >
-                <span className={selectedCategoryId === cat.id ? 'text-blue-600/70' : 'text-white/70'}>
-                  {getCategoryIcon(cat.icon, 16)}
-                </span>
-                {cat.name}
-              </button>
-            ))}
-          </div>
-
           {/* Shortcut Grid */}
           <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-y-10 gap-x-6 w-full">
             {bookmarks?.map(bookmark => (
@@ -720,7 +706,7 @@ function App() {
       {/* Modals */}
       {isCategoryModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl w-full max-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
               <h3 className="text-xl font-semibold text-gray-800">
                 {editingCategory ? '编辑分类' : '新建分类'}
@@ -800,6 +786,7 @@ function App() {
         <SettingsModal 
           onClose={() => setIsSettingsOpen(false)} 
           user={user}
+          onUserUpdate={(updatedUser) => setUser(updatedUser)}
           onAuthOpen={() => { setIsSettingsOpen(false); setIsAuthOpen(true); }}
           currentWallpaper={wallpaper}
           onWallpaperChange={(url) => {

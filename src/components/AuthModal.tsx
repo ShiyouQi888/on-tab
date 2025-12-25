@@ -13,20 +13,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccessMsg('');
     setLoading(true);
 
     try {
       if (isLogin) {
         await authService.signIn(email, password);
+        onSuccess();
+        onClose();
       } else {
         await authService.signUp(email, password);
+        setSuccessMsg('注册成功！一封验证邮件已发送至您的邮箱，请前往查看并点击链接完成验证。验证后即可返回此处登录。');
+        // 注册成功后不再自动切换，让用户有充足时间看清楚提示
       }
-      onSuccess();
-      onClose();
     } catch (err: any) {
       setError(err.message || '操作失败');
     } finally {
@@ -92,6 +96,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
                 />
               </div>
             </div>
+
+            {successMsg && (
+              <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl flex flex-col gap-3 text-blue-700 animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-2 font-bold">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full" />
+                  注册申请已提交
+                </div>
+                <p className="text-sm leading-relaxed">
+                  {successMsg}
+                </p>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setIsLogin(true);
+                    setSuccessMsg('');
+                  }}
+                  className="text-xs font-bold text-blue-600 hover:text-blue-800 self-end underline decoration-2 underline-offset-4"
+                >
+                  去登录 →
+                </button>
+              </div>
+            )}
 
             {error && (
               <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2 text-red-600 text-sm animate-shake">

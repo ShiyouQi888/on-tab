@@ -1,39 +1,66 @@
 import { db, type Bookmark, type Category } from '../db/db';
 import { v4 as uuidv4 } from 'uuid';
+import { authService } from './authService';
 
 export const bookmarkService = {
-  async addBookmark(bookmark: Omit<Bookmark, 'id' | 'createdAt' | 'updatedAt' | 'deleted' | 'syncStatus'>) {
-    const id = Math.random().toString(36).substring(2) + Date.now().toString(36);
+  async addBookmark(bookmark: Omit<Bookmark, 'id' | 'userId' | 'createdAt' | 'updatedAt' | 'deleted' | 'syncStatus'>) {
+    const userId = await authService.getEffectiveUserId();
+    const id = uuidv4();
     const now = Date.now();
     const newBookmark: Bookmark = {
       ...bookmark,
       id,
+      userId,
       createdAt: now,
       updatedAt: now,
       deleted: 0,
       syncStatus: 'pending'
     };
     await db.bookmarks.add(newBookmark);
+    
+    // 如果是已登录用户，立即触发后台同步
+    if (userId !== 'local-user') {
+      import('./syncService').then(({ syncService }) => syncService.sync());
+    }
+
     return newBookmark;
   },
 
   async updateBookmark(id: string, updates: Partial<Bookmark>) {
+    const userId = await authService.getEffectiveUserId();
     const now = Date.now();
-    await db.bookmarks.update(id, {
-      ...updates,
-      updatedAt: now,
-      syncStatus: 'pending'
-    });
+    
+    const bookmark = await db.bookmarks.get(id);
+    if (bookmark && bookmark.userId === userId) {
+      await db.bookmarks.update(id, {
+        ...updates,
+        updatedAt: now,
+        syncStatus: 'pending'
+      });
+
+      if (userId !== 'local-user') {
+        import('./syncService').then(({ syncService }) => syncService.sync());
+      }
+    }
   },
 
   async deleteBookmark(id: string) {
+    const userId = await authService.getEffectiveUserId();
     const now = Date.now();
-    // Soft delete for sync purposes
-    await db.bookmarks.update(id, {
-      deleted: 1,
-      updatedAt: now,
-      syncStatus: 'pending'
-    });
+    
+    const bookmark = await db.bookmarks.get(id);
+    if (bookmark && bookmark.userId === userId) {
+      // Soft delete for sync purposes
+      await db.bookmarks.update(id, {
+        deleted: 1,
+        updatedAt: now,
+        syncStatus: 'pending'
+      });
+
+      if (userId !== 'local-user') {
+        import('./syncService').then(({ syncService }) => syncService.sync());
+      }
+    }
   },
 
   async getBookmarks(options: { 
@@ -43,7 +70,8 @@ export const bookmarkService = {
     offset?: number,
     limit?: number 
   } = {}) {
-    let collection = db.bookmarks.where('deleted').equals(0);
+    const userId = await authService.getEffectiveUserId();
+    let collection = db.bookmarks.where('userId').equals(userId).and(b => b.deleted === 0);
 
     if (options.categoryId) {
       collection = collection.filter(b => b.categoryId === options.categoryId);
@@ -74,8 +102,10 @@ export const bookmarkService = {
 
   async getAllCategories() {
     try {
+      const userId = await authService.getEffectiveUserId();
       const categories = await db.categories
-        .where('deleted').equals(0)
+        .where('userId').equals(userId)
+        .and(c => c.deleted === 0)
         .sortBy('order');
       
       // Check if any category has order undefined and fix it
@@ -95,52 +125,101 @@ export const bookmarkService = {
       return categories;
     } catch (error) {
       console.error('Dexie error in getAllCategories:', error);
-      // If table doesn't exist or other error, return empty array
       return [];
     }
   },
 
   async addCategory(name: string, icon?: string) {
-    const id = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    const userId = await authService.getEffectiveUserId();
+    const id = uuidv4();
     const now = Date.now();
     // Get the highest order to put the new category at the end
-    const lastCategory = await db.categories.orderBy('order').last();
+    const categories = await db.categories.where('userId').equals(userId).sortBy('order');
+    const lastCategory = categories[categories.length - 1];
     const order = lastCategory ? (lastCategory.order + 1) : 0;
     
-    const category = { id, name, icon, order, createdAt: now, updatedAt: now, deleted: 0 };
+    const category: Category = { 
+      id, 
+      userId,
+      name, 
+      icon, 
+      order, 
+      createdAt: now, 
+      updatedAt: now, 
+      deleted: 0,
+      syncStatus: 'pending'
+    };
     await db.categories.add(category);
+    
+    // 如果是已登录用户，立即触发后台同步
+    if (userId !== 'local-user') {
+      import('./syncService').then(({ syncService }) => syncService.sync());
+    }
+    
     return category;
   },
 
   async updateCategoriesOrder(categoryIds: string[]) {
+    const userId = await authService.getEffectiveUserId();
     const now = Date.now();
     await db.transaction('rw', db.categories, async () => {
       for (let i = 0; i < categoryIds.length; i++) {
-        await db.categories.update(categoryIds[i], {
-          order: i,
-          updatedAt: now
-        });
+        const cat = await db.categories.get(categoryIds[i]);
+        if (cat && cat.userId === userId) {
+          await db.categories.update(categoryIds[i], {
+            order: i,
+            updatedAt: now,
+            syncStatus: 'pending'
+          });
+        }
       }
     });
+
+    if (userId !== 'local-user') {
+      import('./syncService').then(({ syncService }) => syncService.sync());
+    }
   },
 
   async updateCategory(id: string, updates: Partial<Category>) {
+    const userId = await authService.getEffectiveUserId();
     const now = Date.now();
-    await db.categories.update(id, {
-      ...updates,
-      updatedAt: now
-    });
+    const cat = await db.categories.get(id);
+    if (cat && cat.userId === userId) {
+      await db.categories.update(id, {
+        ...updates,
+        updatedAt: now,
+        syncStatus: 'pending'
+      });
+
+      if (userId !== 'local-user') {
+        import('./syncService').then(({ syncService }) => syncService.sync());
+      }
+    }
   },
 
   async deleteCategory(id: string) {
+    const userId = await authService.getEffectiveUserId();
     const now = Date.now();
-    await db.categories.update(id, {
-      deleted: 1,
-      updatedAt: now
-    });
-    // Also mark bookmarks in this category as unmanaged or delete them? 
-    // Usually better to keep bookmarks but clear their categoryId
-    await db.bookmarks.where('categoryId').equals(id).modify({ categoryId: undefined });
+    const cat = await db.categories.get(id);
+    if (cat && cat.userId === userId) {
+      await db.categories.update(id, {
+        deleted: 1,
+        updatedAt: now,
+        syncStatus: 'pending'
+      });
+      // Also mark bookmarks in this category as unmanaged or delete them? 
+      // Usually better to keep bookmarks but clear their categoryId
+      await db.bookmarks.where('categoryId').equals(id).modify(b => {
+        if (b.userId === userId) {
+          b.categoryId = undefined;
+          b.syncStatus = 'pending';
+        }
+      });
+
+      if (userId !== 'local-user') {
+        import('./syncService').then(({ syncService }) => syncService.sync());
+      }
+    }
   },
 
   async fetchMetadata(url: string) {

@@ -7,14 +7,13 @@
     "storage",
     "bookmarks",
     "tabs",
-    "notifications"
+    "notifications",
+    "alarms"
   ],
   "host_permissions": [
     "<all_urls>"
   ],
-  "action": {
-    "default_popup": "index.html"
-  },
+  "action": {},
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
