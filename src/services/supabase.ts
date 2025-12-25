@@ -3,11 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
 
-if (!supabaseUrl || supabaseUrl === 'your_supabase_url_here') {
-  console.error('Supabase URL is missing! Please set VITE_SUPABASE_URL in your .env file.');
-}
-if (!supabaseAnonKey || supabaseAnonKey === 'your_supabase_anon_key_here') {
-  console.error('Supabase Anon Key is missing! Please set VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY in your .env file.');
+export const isSupabaseConfigured = 
+  supabaseUrl && 
+  supabaseUrl !== 'your_supabase_url_here' && 
+  supabaseAnonKey && 
+  supabaseAnonKey !== 'your_supabase_anon_key_here';
+
+if (!isSupabaseConfigured) {
+  console.warn('Supabase configuration is missing or using placeholder values. Please set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY in your .env file or deployment environment.');
 }
 
 // 自定义存储适配器，支持在扩展程序的背景脚本（Service Worker）和页面中共享登录状态

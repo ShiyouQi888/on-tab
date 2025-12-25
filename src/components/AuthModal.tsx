@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { authService } from '../services/authService';
 import { X, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
+import { isSupabaseConfigured } from '../services/supabase';
 
 interface AuthModalProps {
   onClose: () => void;
@@ -19,6 +20,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
     e.preventDefault();
     setError('');
     setSuccessMsg('');
+
+    if (!isSupabaseConfigured) {
+      setError('未检测到数据库配置。如果您是开发者，请在 .env 文件或 Netlify 后台配置 Supabase 环境变量 (VITE_SUPABASE_URL 和 VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY)。');
+      return;
+    }
+
     setLoading(true);
 
     try {
