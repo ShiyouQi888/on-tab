@@ -54,6 +54,7 @@ interface SettingsModalProps {
   currentWallpaper: string;
   onWallpaperChange: (url: string) => void;
   onUserUpdate?: (user: any) => void;
+  initialTab?: string;
 }
 
 const AVATAR_STYLES = [
@@ -111,12 +112,20 @@ const SortableCategoryItem = ({ cat, onDelete }: { cat: any, onDelete: (id: stri
   );
 };
 
-export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onAuthOpen, currentWallpaper, onWallpaperChange, onUserUpdate }) => {
+export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onAuthOpen, currentWallpaper, onWallpaperChange, onUserUpdate, initialTab }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const wallpaperFileRef = useRef<HTMLInputElement>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
-  const [activeTab, setActiveTab] = useState<'categories' | 'appearance' | 'migration' | 'feedback' | 'business' | 'contact' | 'about'>('categories');
+  const [activeTab, setActiveTab] = useState<'categories' | 'appearance' | 'migration' | 'feedback' | 'business' | 'contact' | 'about'>(
+    (initialTab as any) || 'categories'
+  );
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab as any);
+    }
+  }, [initialTab]);
   const [customWallpaper, setCustomWallpaper] = useState(currentWallpaper);
   const [avatarSeed, setAvatarSeed] = useState(user?.id || Math.random().toString());
   const [avatarStyle, setAvatarStyle] = useState('avataaars');
@@ -597,7 +606,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                   <div className="p-4 bg-white rounded-xl border border-gray-100 space-y-4">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-500">合作邮箱</span>
-                      <span className="font-bold text-gray-800 select-all">biz@example.com</span>
+                      <span className="font-bold text-gray-800 select-all">blacklaw@foxmail.com</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-500">响应时间</span>
@@ -629,7 +638,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                         </div>
                         <div>
                           <p className="font-bold text-gray-800 mb-1">微信客服</p>
-                          <p className="text-sm text-gray-500">搜索 ID: <span className="text-gray-800 font-medium select-all">Navigation_Assistant</span></p>
+                          <p className="text-sm text-gray-500">搜索 ID: <span className="text-gray-800 font-medium select-all">BEISHAN5678</span></p>
                         </div>
                       </div>
                       <div className="flex items-start gap-4">
@@ -638,16 +647,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                         </div>
                         <div>
                           <p className="font-bold text-gray-800 mb-1">客服邮箱</p>
-                          <p className="text-sm text-gray-500 select-all font-medium text-gray-800">support@example.com</p>
+                          <p className="text-sm text-gray-500 select-all font-medium text-gray-800">blacklaw@foxmail.com</p>
                         </div>
                       </div>
                       <div className="flex items-start gap-4">
                         <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-orange-600 shadow-sm shrink-0">
-                          <Info size={20} />
+                          <User size={20} />
                         </div>
                         <div>
-                          <p className="font-bold text-gray-800 mb-1">办公地址</p>
-                          <p className="text-sm text-gray-500 leading-relaxed">上海市浦东新区某某科技园 A1 座</p>
+                          <p className="font-bold text-gray-800 mb-1">作者</p>
+                          <p className="text-sm text-gray-500 leading-relaxed">北山</p>
                         </div>
                       </div>
                     </div>
@@ -673,7 +682,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                     遇到 Bug 或是想要新功能？我们非常重视每一位用户的建议。请通过以下方式告诉我们：
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <a href="mailto:feedback@example.com" className="flex items-center justify-center gap-3 p-4 bg-white border border-gray-100 rounded-xl text-sm font-bold text-gray-700 hover:border-orange-200 hover:bg-orange-50 transition-all group">
+                    <a href="mailto:blacklaw@foxmail.com" className="flex items-center justify-center gap-3 p-4 bg-white border border-gray-100 rounded-xl text-sm font-bold text-gray-700 hover:border-orange-200 hover:bg-orange-50 transition-all group">
                       <Mail size={18} className="text-orange-500 group-hover:scale-110 transition-transform" />
                       发送邮件
                     </a>
@@ -688,35 +697,50 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
 
             {activeTab === 'about' && (
               <div className="animate-in slide-in-from-right-4 duration-300">
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">关于应用</h3>
-                <p className="text-gray-500 text-sm mb-8">了解更多关于导航书签的信息。</p>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">关于与隐私</h3>
+                <p className="text-gray-500 text-sm mb-8">了解更多关于 On Tab 的信息及您的隐私保护。</p>
 
-                <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 text-center">
-                  <div className="w-20 h-20 bg-blue-600 rounded-[24px] flex items-center justify-center text-white mx-auto mb-6 shadow-xl shadow-blue-100">
-                    <Monitor size={40} />
-                  </div>
-                  <h4 className="text-xl font-black text-gray-800 mb-2">导航书签</h4>
-                  <p className="text-blue-600 font-bold text-sm mb-6">Version 1.0.0</p>
-                  
-                  <div className="space-y-4 text-left max-w-sm mx-auto">
-                    <div className="flex items-start gap-3">
-                      <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                        <ShieldCheck size={12} className="text-white" />
-                      </div>
-                      <p className="text-sm text-gray-600 leading-relaxed">支持 IndexedDB 本地存储，您的数据永远保存在本地。</p>
+                <div className="space-y-6">
+                  <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 text-center">
+                    <div className="w-20 h-20 bg-blue-600 rounded-[24px] flex items-center justify-center text-white mx-auto mb-6 shadow-xl shadow-blue-100">
+                      <Monitor size={40} />
                     </div>
-                    <div className="flex items-start gap-3">
-                      <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                        <Database size={12} className="text-white" />
+                    <h4 className="text-xl font-black text-gray-800 mb-2">On Tab</h4>
+                    <p className="text-blue-600 font-bold text-sm mb-6">Version 1.0.0</p>
+                    
+                    <div className="space-y-4 text-left max-w-sm mx-auto">
+                      <div className="flex items-start gap-3">
+                        <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                          <ShieldCheck size={12} className="text-white" />
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed">支持 IndexedDB 本地存储，您的数据优先保存在本地。</p>
                       </div>
-                      <p className="text-sm text-gray-600 leading-relaxed">集成 Supabase 云同步，跨设备无缝访问书签。</p>
+                      <div className="flex items-start gap-3">
+                        <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                          <Database size={12} className="text-white" />
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed">集成云端备份，跨设备无缝访问书签。</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-8 pt-6 border-t border-gray-200">
+                      <p className="text-xs text-gray-400 font-medium italic">
+                        “ 让书签管理变得简单、高效、优雅 ”
+                      </p>
                     </div>
                   </div>
 
-                  <div className="mt-10 pt-8 border-t border-gray-200">
-                    <p className="text-xs text-gray-400 font-medium italic">
-                      “ 让书签管理变得简单、高效、优雅 ”
-                    </p>
+                  <div className="p-6 bg-white border border-gray-100 rounded-2xl space-y-4">
+                    <h5 className="font-bold text-gray-800 flex items-center gap-2">
+                      <ShieldCheck size={18} className="text-green-500" />
+                      隐私政策概要
+                    </h5>
+                    <div className="space-y-3 text-sm text-gray-600 leading-relaxed">
+                      <p>1. <strong>数据所有权</strong>：您的书签数据归您所有。默认情况下，所有数据均存储在您的本地浏览器中。</p>
+                      <p>2. <strong>云端同步</strong>：当您选择登录并启用同步功能时，数据将加密传输并存储在安全的云服务器中，仅用于多设备间的数据同步。</p>
+                      <p>3. <strong>隐私保护</strong>：我们不会向任何第三方出售、交易或转让您的个人信息。您的账号信息仅用于身份验证。</p>
+                      <p>4. <strong>透明性</strong>：本应用不包含任何第三方广告或跟踪脚本。我们仅在必要时收集匿名崩溃报告以改进应用稳定性。</p>
+                    </div>
                   </div>
                 </div>
               </div>

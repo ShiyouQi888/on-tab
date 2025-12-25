@@ -92,6 +92,7 @@ function App() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [initialSettingsTab, setInitialSettingsTab] = useState<string>('categories');
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
@@ -693,13 +694,29 @@ function App() {
       <footer className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
         <div className="flex items-center gap-2 px-4 py-2 bg-black/10 backdrop-blur-sm rounded-full border border-white/5 transition-opacity hover:opacity-100 opacity-60">
           <span className="text-[11px] text-white/80 font-medium tracking-wide">
-            © {new Date().getFullYear()} 导航书签 · 由 
-            <span className="text-white font-bold ml-1">AI 驱动</span>
+            © {new Date().getFullYear()} On Tab · 由 
+            <span className="text-white font-bold ml-1">北山 开发</span>
           </span>
           <div className="w-[1px] h-3 bg-white/10 mx-1" />
-          <a href="#" className="text-[11px] text-white/60 hover:text-white transition-colors no-underline font-medium">
+          <button 
+            onClick={() => {
+              setInitialSettingsTab('contact');
+              setIsSettingsOpen(true);
+            }}
+            className="text-[11px] text-white/60 hover:text-white transition-colors no-underline font-medium"
+          >
+            联系我们
+          </button>
+          <div className="w-[1px] h-3 bg-white/10 mx-1" />
+          <button 
+            onClick={() => {
+              setInitialSettingsTab('about');
+              setIsSettingsOpen(true);
+            }}
+            className="text-[11px] text-white/60 hover:text-white transition-colors no-underline font-medium"
+          >
             隐私政策
-          </a>
+          </button>
         </div>
       </footer>
 
@@ -789,6 +806,7 @@ function App() {
           onUserUpdate={(updatedUser) => setUser(updatedUser)}
           onAuthOpen={() => { setIsSettingsOpen(false); setIsAuthOpen(true); }}
           currentWallpaper={wallpaper}
+          initialTab={initialSettingsTab}
           onWallpaperChange={(url) => {
             setWallpaper(url);
             localStorage.setItem('app-wallpaper', url);

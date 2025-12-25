@@ -11,7 +11,7 @@ export const syncService = {
     const isExtension = typeof chrome !== 'undefined' && chrome.storage;
     if (isExtension) {
       const { syncLock } = await chrome.storage.local.get('syncLock');
-      if (syncLock && Date.now() - syncLock < 30000) { // 30秒锁定
+      if (syncLock && Date.now() - Number(syncLock) < 30000) { // 30秒锁定
         console.log('同步正在其他页面进行中，跳过本次请求');
         return 0;
       }
