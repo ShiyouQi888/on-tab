@@ -4,14 +4,15 @@ import fs from 'fs';
 // 但 Vite 默认只识别以 VITE_ 开头的变量。
 // 这个脚本会在构建时将 Netlify 的变量转换为 .env 文件，以便 Vite 识别。
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-const supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY || process.env.SUPABASE_ANON_KEY;
-
 console.log('--- 环境检查 ---');
-console.log('SUPABASE_URL exists:', !!process.env.SUPABASE_URL);
-console.log('SUPABASE_ANON_KEY exists:', !!process.env.SUPABASE_ANON_KEY);
-console.log('VITE_SUPABASE_URL exists:', !!process.env.VITE_SUPABASE_URL);
-console.log('VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY exists:', !!process.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY);
+Object.keys(process.env).forEach(key => {
+  if (key.includes('SUPABASE')) {
+    console.log(`${key} exists: true (length: ${process.env[key].length})`);
+  }
+});
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || process.env.SUPABASE_REST_URL;
+const supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY || process.env.SUPABASE_ANON_KEY;
 
 if (supabaseUrl && supabaseKey) {
   const envContent = `VITE_SUPABASE_URL=${supabaseUrl}\nVITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=${supabaseKey}\n`;
