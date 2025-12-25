@@ -96,7 +96,7 @@ const SortableCategoryItem = ({ cat, onDelete }: { cat: any, onDelete: (id: stri
         >
           <GripVertical size={18} />
         </div>
-        <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-gray-400 group-hover:text-blue-500 shadow-sm transition-colors">
+        <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-gray-400 group-hover:text-blue-500 shadow-sm transition-colors border border-gray-100">
           <Tag size={18} />
         </div>
         <span className="font-bold text-gray-700 group-hover:text-gray-900">{cat.name}</span>
@@ -115,6 +115,7 @@ const SortableCategoryItem = ({ cat, onDelete }: { cat: any, onDelete: (id: stri
 export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onAuthOpen, currentWallpaper, onWallpaperChange, onUserUpdate, initialTab }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const wallpaperFileRef = useRef<HTMLInputElement>(null);
+  const htmlInputRef = useRef<HTMLInputElement>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [activeTab, setActiveTab] = useState<'categories' | 'appearance' | 'migration' | 'feedback' | 'business' | 'contact' | 'about'>(
@@ -254,6 +255,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
     }
   };
 
+  const handleHTMLImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const count = await migrationService.importFromHTML(file);
+        alert(`成功从 HTML 导入 ${count} 个书签`);
+        onClose();
+      } catch (err: any) {
+        alert('导入失败: ' + err.message);
+      }
+    }
+  };
+
   const tabs = [
     { id: 'categories', label: '分类管理', icon: Tag },
     { id: 'appearance', label: '外观设置', icon: Palette },
@@ -265,12 +279,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
   ] as const;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-300">
-      <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 flex flex-col md:flex-row h-[600px]">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center p-4 z-[100] animate-in fade-in duration-300">
+      <div className="bg-white/80 backdrop-blur-2xl rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 flex flex-col md:flex-row h-[600px] border border-white/40">
         {/* Sidebar */}
-        <div className="w-full md:w-64 bg-gray-50 border-r border-gray-100 p-6 flex flex-col">
+        <div className="w-full md:w-64 bg-white/40 backdrop-blur-md border-r border-white/20 p-6 flex flex-col">
           <div className="flex items-center gap-3 mb-8 px-2">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
               <Settings size={22} />
             </div>
             <h2 className="text-xl font-bold text-gray-800 tracking-tight">设置中心</h2>
@@ -285,8 +299,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
                     activeTab === tab.id
-                      ? 'bg-white text-blue-600 shadow-sm border border-gray-100'
-                      : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                      ? 'bg-white text-blue-600 shadow-sm border border-white/40'
+                      : 'text-gray-500 hover:bg-white/60 hover:text-gray-700'
                   }`}
                 >
                   <Icon size={18} />
@@ -297,7 +311,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
             })}
           </nav>
 
-          <div className="mt-auto pt-6 border-t border-gray-200 px-2">
+          <div className="mt-auto pt-6 border-t border-white/20 px-2">
             <div className="flex items-center gap-2 text-gray-400 text-xs font-bold uppercase tracking-widest">
               <ShieldCheck size={14} />
               数据安全保障
@@ -306,9 +320,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex flex-col min-w-0 bg-white relative">
+        <div className="flex-1 flex flex-col min-w-0 bg-transparent relative">
           {/* Top Auth Header */}
-          <div className="pl-8 pr-14 py-4 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between">
+          <div className="pl-8 pr-14 py-4 bg-white/20 border-b border-white/20 flex items-center justify-between">
             <div className="flex items-center gap-3">
               {user ? (
                 <>
@@ -328,20 +342,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                     <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider leading-tight">已登录账户</div>
                     <div className="text-sm font-bold text-gray-700 truncate">{user.email}</div>
                   </div>
-                  <button 
-                    onClick={async () => {
-                      await authService.signOut();
-                      onClose();
-                    }}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                    title="退出登录"
-                  >
-                    <LogOut size={18} />
-                  </button>
                 </>
               ) : (
                 <>
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                  <div className="w-8 h-8 rounded-full bg-white/40 flex items-center justify-center text-gray-500 border border-white/20">
                     <User size={18} />
                   </div>
                   <div>
@@ -355,7 +359,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
             {user ? (
               <button 
                 onClick={() => authService.signOut()}
-                className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-red-500 hover:bg-red-50/50 rounded-lg transition-all"
               >
                 <LogOut size={14} />
                 退出登录
@@ -566,22 +570,40 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                     />
                   </div>
 
-                  <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100 hover:border-purple-200 transition-all group md:col-span-2">
+                  <div className="p-6 bg-gray-50/50 rounded-2xl border border-gray-100 hover:border-purple-200 transition-all group md:col-span-2">
                     <div className="flex items-center gap-4 mb-4">
                       <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-purple-600 shadow-sm group-hover:scale-110 transition-transform">
                         <Import size={20} />
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <h4 className="font-bold text-gray-800">从浏览器导入</h4>
-                        <p className="text-xs text-gray-500">一键同步当前浏览器的收藏夹书签</p>
+                        <p className="text-xs text-gray-500">一键同步或上传 HTML 书签文件</p>
                       </div>
                     </div>
-                    <button 
-                      onClick={handleBrowserImport}
-                      className="w-full py-3 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-all"
-                    >
-                      开始扫描并导入
-                    </button>
+                    <div className="flex gap-3">
+                      <button 
+                        onClick={handleBrowserImport}
+                        className="flex-1 py-3 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-all"
+                      >
+                        自动扫描导入
+                      </button>
+                      <button 
+                        onClick={() => htmlInputRef.current?.click()}
+                        className="flex-1 py-3 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all"
+                      >
+                        上传 HTML 文件
+                      </button>
+                    </div>
+                    <input
+                      type="file"
+                      ref={htmlInputRef}
+                      className="hidden"
+                      accept=".html"
+                      onChange={handleHTMLImport}
+                    />
+                    <p className="mt-3 text-[10px] text-gray-400 leading-relaxed">
+                      * 提示：如果“自动扫描”不可用，请在浏览器书签管理器中将书签“导出为 HTML 文件”，然后点击上方按钮上传。
+                    </p>
                   </div>
                 </div>
               </div>

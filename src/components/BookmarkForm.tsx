@@ -66,23 +66,23 @@ export const BookmarkForm: React.FC<BookmarkFormProps> = ({ onClose, onSave, ini
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl border border-gray-100">
-        <div className="flex justify-between items-center mb-6">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+      <div className="bg-white/80 backdrop-blur-2xl rounded-2xl w-full max-w-md shadow-2xl border border-white/40 overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="flex justify-between items-center p-6 border-b border-white/20 bg-white/20">
           <h2 className="text-xl font-bold text-gray-800">{initialData ? '编辑书签' : '添加书签'}</h2>
-          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-500">
+          <button onClick={onClose} className="p-1.5 hover:bg-black/5 rounded-full transition-colors text-gray-500">
             <X size={20} />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">URL</label>
-            <div className="relative">
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">URL 地址</label>
+            <div className="relative group">
               <input
                 type="text"
                 required
                 placeholder="example.com 或 https://..."
-                className="block w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                className="block w-full bg-white/50 border border-white/40 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-gray-800 font-medium"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 onBlur={handleUrlBlur}
@@ -94,101 +94,79 @@ export const BookmarkForm: React.FC<BookmarkFormProps> = ({ onClose, onSave, ini
                   <button 
                     type="button"
                     onClick={handleUrlBlur}
-                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                    className="px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors"
                     title="重新获取信息"
                   >
-                    获取
+                    获取信息
                   </button>
                 )}
               </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">标题</label>
-            <div className="flex gap-2">
-              <div className="w-10 h-10 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center overflow-hidden shrink-0">
-                {icon ? (
-                  <img 
-                    src={icon} 
-                    alt="" 
-                    className="w-full h-full object-cover" 
-                    onError={(e) => {
-                      try {
-                        const urlObj = new URL(url.startsWith('http') ? url : 'https://' + url);
-                        const img = e.target as HTMLImageElement;
-                        img.src = `https://www.google.com/s2/favicons?domain=${urlObj.hostname}&sz=64`;
-                        img.className = "w-6 h-6 object-contain"; // Fallback for small favicons
-                      } catch (err) {
-                        setIcon('');
-                      }
-                    }} 
-                  />
-                ) : (
-                  <Globe className="text-gray-400" size={24} />
-                )}
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">标题名称</label>
               <input
                 type="text"
                 required
-                placeholder="网站名称"
-                className="block w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                placeholder="书签名称"
+                className="block w-full bg-white/50 border border-white/40 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-gray-800 font-medium"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">分类</label>
-            <select
-              className="block w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-            >
-              <option value="">未分类</option>
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">分类目录</label>
+              <select
+                className="block w-full bg-white/50 border border-white/40 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-gray-800 font-medium appearance-none cursor-pointer"
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+              >
+                <option value="">未分类</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">标签 (逗号分隔)</label>
+              <input
+                type="text"
+                placeholder="工作, 学习, 娱乐"
+                className="block w-full bg-white/50 border border-white/40 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-gray-800 font-medium"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">标签 (逗号分隔)</label>
-            <input
-              type="text"
-              placeholder="标签1, 标签2..."
-              className="block w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">备注</label>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">备注说明 (可选)</label>
             <textarea
-              placeholder="添加备注..."
-              className="block w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-              rows={3}
+              placeholder="添加一些备注..."
+              className="block w-full bg-white/50 border border-white/40 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-gray-800 font-medium h-20 resize-none"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
-            <button
+          <div className="flex gap-3 pt-2">
+            <button 
               type="button"
-              onClick={onClose}
-              className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              onClick={onClose} 
+              className="flex-1 px-4 py-3 text-gray-700 font-bold hover:bg-black/5 rounded-xl transition-all"
             >
               取消
             </button>
-            <button
+            <button 
               type="submit"
-              disabled={isFetching}
-              className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-blue-300 shadow-md hover:shadow-lg transition-all active:scale-95"
+              className="flex-1 px-4 py-3 bg-blue-600 text-white font-bold hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95"
             >
-              保存书签
+              {initialData ? '更新书签' : '保存书签'}
             </button>
           </div>
         </form>

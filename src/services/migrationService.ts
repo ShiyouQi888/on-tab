@@ -62,6 +62,39 @@ export const migrationService = {
     this.downloadFile(html, `bookmarks-export-${new Date().toISOString().split('T')[0]}.html`, 'text/html');
   },
 
+  async importFromHTML(file: File) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const content = e.target?.result as string;
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(content, 'text/html');
+          const links = doc.querySelectorAll('a');
+          let count = 0;
+
+          for (const link of Array.from(links)) {
+            const title = link.textContent || 'Untitled';
+            const url = link.getAttribute('href');
+            if (url && (url.startsWith('http') || url.startsWith('https'))) {
+              await bookmarkService.addBookmark({
+                title,
+                url,
+                tags: link.getAttribute('tags')?.split(',').filter(t => t) || [],
+                notes: 'Imported from HTML'
+              });
+              count++;
+            }
+          }
+          resolve(count);
+        } catch (err) {
+          reject(err);
+        }
+      };
+      reader.readAsText(file);
+    });
+  },
+
   downloadFile(content: string, fileName: string, contentType: string) {
     const blob = new Blob([content], { type: contentType });
     const url = URL.createObjectURL(blob);

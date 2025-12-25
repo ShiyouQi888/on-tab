@@ -578,7 +578,7 @@ function App() {
                   }}
                   className="flex items-center gap-2 px-1 py-1 hover:bg-black/5 rounded-xl transition-colors shrink-0 z-20"
                 >
-                  <div className="w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center bg-white/20">
+                  <div className="w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center bg-white/20 border border-white/20">
                     <img src={selectedSearchEngine.icon} alt="" className="w-full h-full object-cover pointer-events-none" />
                   </div>
                   <div className={`w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-gray-500 transition-transform duration-300 ${isSearchEngineMenuOpen ? 'rotate-180' : ''}`} />
@@ -656,7 +656,7 @@ function App() {
                 className="flex flex-col items-center group relative cursor-pointer no-underline"
                 onContextMenu={(e) => handleContextMenu(e, bookmark)}
               >
-                <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 group-hover:shadow-xl transition-all duration-300 relative overflow-hidden shadow-lg border border-white/10">
+                <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 group-hover:shadow-xl transition-all duration-300 relative overflow-hidden shadow-lg border border-black/5">
                   {bookmark.icon ? (
                     <img src={bookmark.icon} alt="" className="w-full h-full object-cover" onError={(e) => {
                       (e.target as HTMLImageElement).src = `https://www.google.com/s2/favicons?domain=${new URL(bookmark.url).hostname}&sz=128`;
@@ -679,7 +679,7 @@ function App() {
                 setIsFormOpen(true);
               }}
             >
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center mb-3 group-hover:bg-white/30 group-hover:scale-105 transition-all duration-300 shadow-lg border border-white/10">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center mb-3 group-hover:bg-white/30 group-hover:scale-105 transition-all duration-300 shadow-lg border border-white/20">
                 <Plus size={32} className="text-white/90" />
               </div>
               <span className="text-[13px] text-white font-bold drop-shadow-md">添加</span>
@@ -730,36 +730,36 @@ function App() {
 
       {/* Modals */}
       {isCategoryModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-gray-800">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/20 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white/80 backdrop-blur-2xl rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-white/40">
+            <div className="p-6 border-b border-white/20 flex items-center justify-between bg-white/20">
+              <h3 className="text-xl font-bold text-gray-800">
                 {editingCategory ? '编辑分类' : '新建分类'}
               </h3>
-              <button onClick={() => setIsCategoryModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                <X size={20} className="text-gray-500" />
+              <button onClick={() => setIsCategoryModalOpen(false)} className="p-2 hover:bg-black/5 rounded-full transition-colors">
+                <X size={20} className="text-gray-600" />
               </button>
             </div>
             
             <div className="p-6 space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">分类名称</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">分类名称</label>
                 <input
                   type="text" autoFocus placeholder="例如：AI 办公、设计素材..."
-                  className="block w-full border border-gray-200 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-gray-800"
+                  className="block w-full bg-white/50 border border-white/40 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-gray-800 font-medium"
                   value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSaveCategory()}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">选择图标</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">选择图标</label>
                 <div className="grid grid-cols-6 gap-2 max-h-48 overflow-y-auto p-1 no-scrollbar">
                   {CATEGORY_ICONS.map((icon) => {
                     const IconComp = icon.icon;
                     return (
                       <button
                         key={icon.id} onClick={() => setSelectedIconId(icon.id)}
-                        className={`p-3 rounded-lg flex items-center justify-center transition-all ${selectedIconId === icon.id ? 'bg-blue-500 text-white shadow-lg scale-110' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
+                        className={`p-3 rounded-xl flex items-center justify-center transition-all ${selectedIconId === icon.id ? 'bg-blue-600 text-white shadow-lg scale-110' : 'bg-white/40 text-gray-500 hover:bg-white/60 border border-white/20'}`}
                         title={icon.label}
                       >
                         <IconComp size={20} />
@@ -770,9 +770,9 @@ function App() {
               </div>
             </div>
 
-            <div className="p-6 bg-gray-50 flex gap-3">
-              <button onClick={() => setIsCategoryModalOpen(false)} className="flex-1 px-4 py-3 text-gray-600 font-medium hover:bg-gray-100 rounded-lg">取消</button>
-              <button onClick={handleSaveCategory} className="flex-1 px-4 py-3 bg-blue-600 text-white font-medium hover:bg-blue-700 rounded-lg shadow-lg">保存</button>
+            <div className="p-6 bg-white/30 border-t border-white/20 flex gap-3">
+              <button onClick={() => setIsCategoryModalOpen(false)} className="flex-1 px-4 py-3 text-gray-700 font-bold hover:bg-black/5 rounded-xl transition-all">取消</button>
+              <button onClick={handleSaveCategory} className="flex-1 px-4 py-3 bg-blue-600 text-white font-bold hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95">保存</button>
             </div>
           </div>
         </div>

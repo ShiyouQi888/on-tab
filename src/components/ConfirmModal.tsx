@@ -51,26 +51,26 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300"
+        className="absolute inset-0 bg-black/20 backdrop-blur-md animate-in fade-in duration-300"
         onClick={onClose}
       />
       
       {/* Modal Content */}
-      <div className="relative bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 border border-gray-100">
-        <div className={`p-6 ${currentColors.bg} flex flex-col items-center text-center`}>
-          <div className={`w-14 h-14 ${currentColors.bg} rounded-full flex items-center justify-center mb-4 border-4 border-white shadow-sm`}>
+      <div className="relative bg-white/80 backdrop-blur-2xl rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 border border-white/40">
+        <div className={`p-6 bg-white/20 flex flex-col items-center text-center`}>
+          <div className={`w-14 h-14 bg-white/40 rounded-full flex items-center justify-center mb-4 border-2 border-white/60 shadow-sm`}>
             <AlertTriangle className={currentColors.icon} size={28} />
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
-          <p className="text-gray-600 text-sm leading-relaxed">
+          <p className="text-gray-600 text-sm leading-relaxed font-medium">
             {message}
           </p>
         </div>
 
-        <div className="p-4 bg-white flex gap-3">
+        <div className="p-4 bg-white/10 flex gap-3 border-t border-white/20">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all border border-gray-100"
+            className="flex-1 px-4 py-3 rounded-xl font-bold text-gray-700 hover:bg-black/5 transition-all border border-white/40"
           >
             {cancelText}
           </button>
@@ -87,7 +87,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 hover:bg-black/5 rounded-full transition-all"
+          className="absolute top-4 right-4 p-1.5 text-gray-500 hover:text-gray-700 hover:bg-black/5 rounded-full transition-all"
         >
           <X size={18} />
         </button>

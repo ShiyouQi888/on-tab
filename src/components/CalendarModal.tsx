@@ -59,12 +59,12 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, i
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+        className="absolute inset-0 bg-black/20 backdrop-blur-md animate-in fade-in duration-200"
         onClick={onClose}
       />
       
       {/* Calendar Container */}
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-[360px] overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative bg-white/80 backdrop-blur-2xl rounded-3xl shadow-2xl w-full max-w-[360px] overflow-hidden animate-in zoom-in-95 duration-200 border border-white/40">
         {/* Header */}
         <div className="bg-blue-600 p-6 text-white relative">
           <div className="flex items-center justify-between mb-2 pr-10">
@@ -104,7 +104,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, i
         <div className="p-6">
           <div className="grid grid-cols-7 gap-1 mb-2">
             {dayNames.map(day => (
-              <div key={day} className="h-10 w-10 flex items-center justify-center text-xs font-bold text-gray-400 uppercase tracking-wider">
+              <div key={day} className="h-10 w-10 flex items-center justify-center text-xs font-bold text-gray-400 uppercase tracking-widest">
                 {day}
               </div>
             ))}
