@@ -9,7 +9,8 @@ const isExtension = typeof chrome !== 'undefined' && chrome.storage && chrome.st
 const chromeStorageAdapter = {
   getItem: async (key: string) => {
     const result = await chrome.storage.local.get([key]);
-    return result[key] || null;
+    const value = result[key];
+    return typeof value === 'string' ? value : null;
   },
   setItem: async (key: string, value: string) => {
     await chrome.storage.local.set({ [key]: value });
