@@ -523,6 +523,14 @@ function App() {
             <div className="flex items-center gap-4 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
               <span className="text-sm text-white font-medium">{user.email}</span>
               <button 
+                onClick={handleSync}
+                disabled={syncing}
+                className={`p-1.5 rounded-full hover:bg-white/20 text-white transition-all group/sync active:scale-90 ${syncing ? 'opacity-50' : ''}`}
+                title="立即同步"
+              >
+                <RefreshCw size={14} className={`${syncing ? 'animate-spin' : 'group-hover/sync:rotate-180 transition-transform duration-500'}`} />
+              </button>
+              <button 
                 onClick={() => authService.signOut()}
                 className="text-xs text-white/60 hover:text-white transition-colors"
               >

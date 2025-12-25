@@ -1,6 +1,28 @@
 import { syncService } from './src/services/syncService';
 
-// Service Worker for DaoHangShuQian
+// 解决 CRXJS 在 Service Worker 中 HMR 报错 (location.reload is not a function)
+if (typeof self !== 'undefined' && self.location) {
+  try {
+    if (!('reload' in self.location)) {
+      Object.defineProperty(self.location, 'reload', {
+        value: () => {
+          console.log('CRXJS: HMR reload requested, but location.reload is not available in Service Worker.');
+        },
+        writable: true,
+        configurable: true
+      });
+    }
+  } catch (e) {
+    // 如果无法定义在 location 上，尝试定义在 self 上作为后备
+    if (!('reload' in self)) {
+      (self as any).reload = () => {
+        console.log('CRXJS: HMR reload requested (fallback), ignoring...');
+      };
+    }
+  }
+}
+
+// Service Worker for On Tab
 
 // 监听插件图标点击事件
 chrome.action.onClicked.addListener(() => {
@@ -12,14 +34,14 @@ chrome.alarms.create('periodic-sync', { periodInMinutes: 60 });
 
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === 'periodic-sync') {
-    console.log('DaoHangShuQian: 执行定时后台同步...');
+    console.log('On Tab: 执行定时后台同步...');
     syncService.sync().catch(err => console.error('Background sync failed:', err));
   }
 });
 
 // 监听安装事件
 chrome.runtime.onInstalled.addListener((details) => {
-  console.log('DaoHangShuQian: Service Worker Installed', details.reason);
+  console.log('On Tab: Service Worker Installed', details.reason);
   // 安装后立即执行一次同步
   syncService.sync().catch(err => console.error('Initial sync failed:', err));
 });
@@ -32,7 +54,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   
   if (message.type === 'REQUEST_SYNC') {
-    console.log('DaoHangShuQian: 收到手动同步请求');
+    console.log('On Tab: 收到手动同步请求');
     syncService.sync()
       .then(count => sendResponse({ success: true, pulledCount: count }))
       .catch(err => sendResponse({ success: false, error: err.message }));
@@ -44,7 +66,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // 捕获未处理的错误
 self.addEventListener('error', (event: any) => {
-  console.error('DaoHangShuQian: Service Worker Error', event.error);
+  console.error('On Tab: Service Worker Error', event.error);
 });
 
-console.log('DaoHangShuQian: Service Worker Initialized');
+console.log('On Tab: Service Worker Initialized');

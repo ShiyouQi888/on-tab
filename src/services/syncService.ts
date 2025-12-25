@@ -114,8 +114,8 @@ export const syncService = {
           .from('categories')
           .upsert({ 
             ...rest, 
-            created_at: createdAt,
-            updated_at: updatedAt,
+            created_at: new Date(createdAt).toISOString(),
+            updated_at: new Date(updatedAt).toISOString(),
             user_id: userId 
           }, {
             onConflict: 'id'
@@ -161,8 +161,8 @@ export const syncService = {
           .upsert({ 
             ...rest, 
             category_id: categoryId,
-            created_at: createdAt,
-            updated_at: updatedAt,
+            created_at: new Date(createdAt).toISOString(),
+            updated_at: new Date(updatedAt).toISOString(),
             user_id: userId 
           }, {
             onConflict: 'id'
@@ -194,13 +194,15 @@ export const syncService = {
       console.log(`获取到 ${remoteCategories?.length || 0} 个远程分类`);
       for (const remote of remoteCategories || []) {
         const local = await db.categories.get(remote.id);
+        const remoteUpdatedAt = new Date(remote.updated_at).getTime();
+        
         // 如果本地没有，或者远程更亲，则更新本地
-        if (!local || remote.updated_at > (local.updatedAt || 0)) {
+        if (!local || remoteUpdatedAt > (local.updatedAt || 0)) {
           const { user_id, created_at, updated_at, ...rest } = remote;
           await db.categories.put({
             ...rest,
-            createdAt: created_at,
-            updatedAt: updated_at,
+            createdAt: new Date(created_at).getTime(),
+            updatedAt: remoteUpdatedAt,
             userId,
             deleted: remote.deleted || 0,
             syncStatus: 'synced'
@@ -224,14 +226,15 @@ export const syncService = {
     let pulledCount = 0;
     for (const remote of remoteBookmarks || []) {
       const local = await db.bookmarks.get(remote.id);
+      const remoteUpdatedAt = new Date(remote.updated_at).getTime();
       
-      if (!local || remote.updated_at > (local.updatedAt || 0)) {
+      if (!local || remoteUpdatedAt > (local.updatedAt || 0)) {
         const { user_id, category_id, created_at, updated_at, ...rest } = remote;
         await db.bookmarks.put({
           ...rest,
           categoryId: category_id,
-          createdAt: created_at,
-          updatedAt: updated_at,
+          createdAt: new Date(created_at).getTime(),
+          updatedAt: remoteUpdatedAt,
           userId,
           syncStatus: 'synced'
         });
