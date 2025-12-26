@@ -114,8 +114,8 @@ export const syncService = {
           .from('categories')
           .upsert({ 
             ...rest, 
-            created_at: new Date(createdAt).toISOString(),
-            updated_at: new Date(updatedAt).toISOString(),
+            created_at: createdAt,
+            updated_at: updatedAt,
             user_id: userId 
           }, {
             onConflict: 'id'
@@ -145,15 +145,42 @@ export const syncService = {
       try {
         // 在推送书签之前，检查对应的分类是否已经在云端（外键约束保护）
         if (bookmark.categoryId) {
-          const { data: catExists } = await supabase
+          const { data: catExists, error: checkError } = await supabase
             .from('categories')
             .select('id')
             .eq('id', bookmark.categoryId)
-            .single();
+            .maybeSingle();
           
+          if (checkError) {
+            console.error(`检查分类是否存在时出错: ${bookmark.categoryId}`, checkError);
+            continue;
+          }
+
           if (!catExists) {
             console.warn(`跳过书签 ${bookmark.title}，分类 ${bookmark.categoryId} 尚未同步`);
-            continue;
+            // 尝试立即同步这个缺失的分类
+            const missingCat = await db.categories.get(bookmark.categoryId);
+            if (missingCat) {
+              console.log(`尝试立即补推缺失的分类: ${missingCat.name}`);
+              const { userId: _, syncStatus: __, createdAt: c, updatedAt: u, ...catRest } = missingCat;
+              const { error: upsertError } = await supabase.from('categories').upsert({
+                ...catRest,
+                created_at: c,
+                updated_at: u,
+                user_id: userId
+              });
+              if (upsertError) {
+                console.error('补推分类失败:', upsertError);
+                continue;
+              } else {
+                await db.categories.update(missingCat.id, { syncStatus: 'synced' });
+              }
+            } else {
+              // 分类不存在，清除书签的 categoryId
+              console.log(`分类已不存在，清除书签的 categoryId: ${bookmark.title}`);
+              await db.bookmarks.update(bookmark.id, { categoryId: undefined, syncStatus: 'pending' });
+              continue;
+            }
           }
         }
 
@@ -163,8 +190,8 @@ export const syncService = {
           .upsert({ 
             ...rest, 
             category_id: categoryId,
-            created_at: new Date(createdAt).toISOString(),
-            updated_at: new Date(updatedAt).toISOString(),
+            created_at: createdAt,
+            updated_at: updatedAt,
             user_id: userId 
           }, {
             onConflict: 'id'
@@ -172,6 +199,7 @@ export const syncService = {
         
         if (!error) {
           await db.bookmarks.update(bookmark.id, { syncStatus: 'synced' });
+          console.log(`书签已同步到云端: ${bookmark.title}`);
         } else {
           console.error(`Push bookmark ${bookmark.id} error:`, error);
         }
@@ -198,14 +226,16 @@ export const syncService = {
       console.log(`获取到 ${remoteCategories?.length || 0} 个远程分类`);
       for (const remote of remoteCategories || []) {
         const local = await db.categories.get(remote.id);
-        const remoteUpdatedAt = new Date(remote.updated_at).getTime();
+        const remoteUpdatedAt = typeof remote.updated_at === 'number' 
+          ? remote.updated_at 
+          : new Date(remote.updated_at).getTime();
         
         // 如果本地没有，或者远程更亲，则更新本地
         if (!local || remoteUpdatedAt > (local.updatedAt || 0)) {
           const { user_id, created_at, updated_at, ...rest } = remote;
           await db.categories.put({
             ...rest,
-            createdAt: new Date(created_at).getTime(),
+            createdAt: typeof created_at === 'number' ? created_at : new Date(created_at).getTime(),
             updatedAt: remoteUpdatedAt,
             userId,
             order: typeof remote.order === 'number' ? remote.order : 0,
@@ -214,6 +244,9 @@ export const syncService = {
           });
           pulledCount++;
           console.log(`更新本地分类: ${remote.name || remote.id}`);
+        } else if (local && local.syncStatus !== 'synced') {
+          // 如果本地存在且未同步，且本地比远程新，则保持本地状态（会在下一次同步时推送到远程）
+          console.log(`本地分类 ${local.name} 较新，等待推送到远程`);
         }
       }
     }
@@ -232,20 +265,24 @@ export const syncService = {
     console.log(`获取到 ${remoteBookmarks?.length || 0} 个远程书签`);
     for (const remote of remoteBookmarks || []) {
       const local = await db.bookmarks.get(remote.id);
-      const remoteUpdatedAt = new Date(remote.updated_at).getTime();
+      const remoteUpdatedAt = typeof remote.updated_at === 'number'
+        ? remote.updated_at
+        : new Date(remote.updated_at).getTime();
       
       if (!local || remoteUpdatedAt > (local.updatedAt || 0)) {
         const { user_id, category_id, created_at, updated_at, ...rest } = remote;
         await db.bookmarks.put({
           ...rest,
           categoryId: category_id,
-          createdAt: new Date(created_at).getTime(),
+          createdAt: typeof created_at === 'number' ? created_at : new Date(created_at).getTime(),
           updatedAt: remoteUpdatedAt,
           userId,
           syncStatus: 'synced'
         });
         pulledCount++;
         console.log(`更新本地书签: ${remote.title || remote.id}`);
+      } else if (local && local.syncStatus !== 'synced') {
+        console.log(`本地书签 ${local.title} 较新，等待推送到远程`);
       }
     }
     console.log(`远程拉取完成，共更新了 ${pulledCount} 条数据`);
