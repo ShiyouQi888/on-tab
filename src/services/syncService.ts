@@ -123,8 +123,10 @@ export const syncService = {
           
         if (!error) {
           await db.categories.update(category.id, { syncStatus: 'synced' });
+          console.log(`分类已同步到云端: ${category.name}`);
         } else {
           console.error(`Push category ${category.id} error:`, error);
+          // 如果是因为外键或其他约束，这里会记录
         }
       } catch (err) {
         console.error(`Unexpected error pushing category ${category.id}:`, err);
@@ -182,6 +184,8 @@ export const syncService = {
 
   async pullRemoteChanges(userId: string) {
     console.log('开始从远程拉取更改...', userId);
+    let pulledCount = 0;
+
     // 1. 拉取分类
     const { data: remoteCategories, error: catError } = await supabase
       .from('categories')
@@ -204,9 +208,12 @@ export const syncService = {
             createdAt: new Date(created_at).getTime(),
             updatedAt: remoteUpdatedAt,
             userId,
+            order: typeof remote.order === 'number' ? remote.order : 0,
             deleted: remote.deleted || 0,
             syncStatus: 'synced'
           });
+          pulledCount++;
+          console.log(`更新本地分类: ${remote.name || remote.id}`);
         }
       }
     }
@@ -223,7 +230,6 @@ export const syncService = {
     }
     
     console.log(`获取到 ${remoteBookmarks?.length || 0} 个远程书签`);
-    let pulledCount = 0;
     for (const remote of remoteBookmarks || []) {
       const local = await db.bookmarks.get(remote.id);
       const remoteUpdatedAt = new Date(remote.updated_at).getTime();
@@ -239,9 +245,10 @@ export const syncService = {
           syncStatus: 'synced'
         });
         pulledCount++;
+        console.log(`更新本地书签: ${remote.title || remote.id}`);
       }
     }
-    console.log(`远程拉取完成，更新了 ${pulledCount} 条数据`);
+    console.log(`远程拉取完成，共更新了 ${pulledCount} 条数据`);
     return pulledCount;
   },
 
