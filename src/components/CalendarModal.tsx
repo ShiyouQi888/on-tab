@@ -89,6 +89,16 @@ const HOLIDAYS_DATA: Record<string, Holiday> = {
   "2025-09-28": { date: "2025-09-28", name: "班", isWorkingDay: true },
   "2025-10-11": { date: "2025-10-11", name: "班", isWorkingDay: true },
 
+  // 2025 年末补充 (为了测试和完整性)
+  "2025-12-20": { date: "2025-12-20", name: "休", isWorkingDay: false },
+  "2025-12-21": { date: "2025-12-21", name: "冬至", isWorkingDay: false },
+  "2025-12-24": { date: "2025-12-24", name: "平安夜" },
+  "2025-12-25": { date: "2025-12-25", name: "圣诞节" },
+  "2025-12-26": { date: "2025-12-26", name: "节日", isWorkingDay: false }, // 今天测试
+  "2025-12-27": { date: "2025-12-27", name: "休", isWorkingDay: false },
+  "2025-12-28": { date: "2025-12-28", name: "休", isWorkingDay: false },
+  "2025-12-31": { date: "2025-12-31", name: "跨年" },
+
   // 2026
   "2026-01-01": { date: "2026-01-01", name: "元旦" },
   "2026-01-02": { date: "2026-01-02", name: "元旦" },
@@ -172,6 +182,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, i
     days.push(
       <div 
         key={d} 
+        data-date={dateStr}
         className={`h-10 w-10 sm:h-12 sm:w-12 flex flex-col items-center justify-center rounded-xl text-sm font-bold transition-all relative group/day
           ${isToday 
             ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' 
