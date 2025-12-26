@@ -284,8 +284,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
         {/* Sidebar */}
         <div className="w-full md:w-64 bg-white/40 backdrop-blur-md border-r border-white/20 p-6 flex flex-col">
           <div className="flex items-center gap-3 mb-8 px-2">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-              <Settings size={22} />
+            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/10 overflow-hidden border border-gray-100">
+              <img src="/ontab-logo-1.svg" alt="Logo" className="w-7 h-7 object-contain" />
             </div>
             <h2 className="text-xl font-bold text-gray-800 tracking-tight">设置中心</h2>
           </div>
@@ -724,8 +724,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
 
                 <div className="space-y-6">
                   <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 text-center">
-                    <div className="w-20 h-20 bg-blue-600 rounded-[24px] flex items-center justify-center text-white mx-auto mb-6 shadow-xl shadow-blue-100">
-                      <Monitor size={40} />
+                    <div className="w-20 h-20 bg-white rounded-[24px] flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-100/50 overflow-hidden border border-gray-100">
+                      <img src="/ontab-logo-1.svg" alt="On Tab Logo" className="w-14 h-14 object-contain" />
                     </div>
                     <h4 className="text-xl font-black text-gray-800 mb-2">On Tab</h4>
                     <p className="text-blue-600 font-bold text-sm mb-6">Version 1.0.0</p>
@@ -745,10 +745,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                       </div>
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-gray-200">
+                    <div className="mt-8 pt-6 border-t border-gray-200 flex flex-col items-center gap-4">
                       <p className="text-xs text-gray-400 font-medium italic">
                         “ 让书签管理变得简单、高效、优雅 ”
                       </p>
+                      <a 
+                        href="/privacy.html" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-xs text-blue-500 hover:text-blue-600 font-bold flex items-center gap-1 transition-colors"
+                      >
+                        查看详细隐私政策
+                        <ExternalLink size={12} />
+                      </a>
                     </div>
                   </div>
 

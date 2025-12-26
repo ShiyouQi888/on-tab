@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "On Tab",
+    "description": "扩展程序的名称"
+  },
+  "appDesc": {
+    "message": "一个功能完善的浏览器书签导航插件，支持同步、日历节假日显示等功能。",
+    "description": "扩展程序的描述"
+  }
+}

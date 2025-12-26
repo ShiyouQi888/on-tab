@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "On Tab",
+    "description": "The name of the extension"
+  },
+  "appDesc": {
+    "message": "A fully functional browser bookmark navigation extension.",
+    "description": "The description of the extension"
+  }
+}

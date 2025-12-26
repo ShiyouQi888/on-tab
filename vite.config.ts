@@ -21,6 +21,12 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       sourcemap: true,
+      rollupOptions: {
+        input: {
+          main: 'index.html',
+          privacy: 'privacy.html',
+        },
+      },
     },
     server: {
     port: 5173,
