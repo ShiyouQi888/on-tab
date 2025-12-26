@@ -501,17 +501,20 @@ function App() {
 
       {/* Top Header - Global Actions */}
       <div className="fixed top-6 left-8 right-8 flex items-center justify-between z-40">
-        {/* Time & Weather Component */}
-        <div className="flex items-center gap-8 px-2 py-1 transition-all">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center text-white animate-pulse drop-shadow-lg">
-              <weather.icon size={22} />
+        {/* Time & Weather Component (Modified Layout) */}
+        <div className="flex flex-col items-start gap-1 px-2 py-1 transition-all">
+          <h2 className="text-4xl font-bold text-white leading-none tracking-tighter drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)] select-none">
+            {currentTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}
+          </h2>
+          <div className="flex items-center gap-2 mt-0.5 opacity-90">
+            <div className="flex items-center justify-center text-white animate-pulse drop-shadow-md">
+              <weather.icon size={16} />
             </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold text-white leading-none tracking-tight drop-shadow-lg">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-white leading-none drop-shadow-md">
                 {weather.temp}°C
               </span>
-              <span className="text-[11px] text-white/90 font-bold uppercase tracking-wider drop-shadow-md mt-1">
+              <span className="text-[10px] text-white/90 font-bold uppercase tracking-wider drop-shadow-sm">
                 {weather.condition}
               </span>
             </div>
