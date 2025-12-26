@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { type Bookmark, type Category } from '../db/db';
 import { bookmarkService } from '../services/bookmarkService';
-import { X, Loader2, Globe } from 'lucide-react';
+import { X, Loader2, Globe, RefreshCw } from 'lucide-react';
 
 interface BookmarkFormProps {
   onClose: () => void;
@@ -18,6 +18,7 @@ export const BookmarkForm: React.FC<BookmarkFormProps> = ({ onClose, onSave, ini
   const [categoryId, setCategoryId] = useState(initialData?.categoryId || '');
   const [categories, setCategories] = useState<Category[]>([]);
   const [isFetching, setIsFetching] = useState(false);
+  const [fetchedIcon, setFetchedIcon] = useState('');
 
   useEffect(() => {
     bookmarkService.getAllCategories().then(setCategories);
@@ -31,8 +32,11 @@ export const BookmarkForm: React.FC<BookmarkFormProps> = ({ onClose, onSave, ini
         setIsFetching(true);
         try {
           const metadata = await bookmarkService.fetchMetadata(url);
-          if (metadata.title) setTitle(metadata.title);
-          if (metadata.icon) setIcon(metadata.icon);
+          if (metadata.title && !title) setTitle(metadata.title);
+          if (metadata.icon) {
+            setFetchedIcon(metadata.icon);
+            if (!icon) setIcon(metadata.icon);
+          }
           if (metadata.url && url !== metadata.url) setUrl(metadata.url);
         } catch (err) {
           console.error('Fetch metadata error:', err);
@@ -115,6 +119,49 @@ export const BookmarkForm: React.FC<BookmarkFormProps> = ({ onClose, onSave, ini
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">图标预览 & 自定义 (二选一)</label>
+            <div className="flex items-start gap-4 p-4 bg-white/40 border border-white/40 rounded-2xl transition-all">
+              <div className="w-14 h-14 bg-white/60 rounded-xl border border-white/60 flex items-center justify-center shrink-0 shadow-sm overflow-hidden group relative">
+                {icon ? (
+                  <img 
+                    src={icon} 
+                    alt="icon" 
+                    className="w-10 h-10 object-contain transition-transform group-hover:scale-110"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://www.google.com/s2/favicons?domain=${url}&sz=64`;
+                    }}
+                  />
+                ) : (
+                  <Globe className="text-gray-300" size={28} />
+                )}
+              </div>
+              
+              <div className="flex-1 space-y-3">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="手动输入图标 URL..."
+                    className="block w-full bg-white/50 border border-white/40 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-gray-700"
+                    value={icon}
+                    onChange={(e) => setIcon(e.target.value)}
+                  />
+                </div>
+                
+                {fetchedIcon && icon !== fetchedIcon && (
+                  <button
+                    type="button"
+                    onClick={() => setIcon(fetchedIcon)}
+                    className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-[10px] font-black hover:bg-blue-100 transition-colors uppercase tracking-tight"
+                  >
+                    <RefreshCw size={10} className="group-hover:rotate-180 transition-transform duration-500" />
+                    恢复获取到的图标
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
