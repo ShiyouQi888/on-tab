@@ -500,27 +500,7 @@ function App() {
       </div>
 
       {/* Top Header - Global Actions */}
-      <div className="fixed top-6 left-8 right-8 flex items-center justify-between z-40">
-        {/* Time & Weather Component (Modified Layout) */}
-        <div className="flex flex-col items-start gap-1 px-2 py-1 transition-all">
-          <h2 className="text-4xl font-bold text-white leading-none tracking-tighter drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)] select-none">
-            {currentTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}
-          </h2>
-          <div className="flex items-center gap-2 mt-0.5 opacity-90">
-            <div className="flex items-center justify-center text-white animate-pulse drop-shadow-md">
-              <weather.icon size={16} />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-white leading-none drop-shadow-md">
-                {weather.temp}°C
-              </span>
-              <span className="text-[10px] text-white/90 font-bold uppercase tracking-wider drop-shadow-sm">
-                {weather.condition}
-              </span>
-            </div>
-          </div>
-        </div>
-
+      <div className="fixed top-6 left-8 right-8 flex items-center justify-end z-40">
         <div className="flex items-center gap-4">
           {user ? (
             <div className="flex items-center gap-4 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
@@ -555,10 +535,26 @@ function App() {
       <div className="w-full max-w-4xl flex flex-col items-center gap-12 relative z-10 pt-[5vh]">
         <main className="flex-1 flex flex-col items-center justify-start w-full max-w-[800px] px-4">
           {/* Large Clock */}
-          <div className="mb-8 flex flex-col items-center">
-            <h1 className="text-[120px] font-bold text-white leading-none tracking-tighter drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)] select-none">
-              {currentTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}
-            </h1>
+          <div className="mb-8 flex flex-col items-center relative">
+            <div className="relative">
+              <h1 className="text-[120px] font-bold text-white leading-none tracking-tighter drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)] select-none">
+                {currentTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}
+              </h1>
+              {/* Weather info at the bottom-right of the time */}
+              <div className="absolute left-[calc(100%+0.5rem)] bottom-6 flex items-center gap-2 px-3 py-1 bg-black/20 backdrop-blur-md rounded-full border border-white/10 opacity-90 whitespace-nowrap">
+                <div className="flex items-center justify-center text-white animate-pulse">
+                  <weather.icon size={14} />
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-white">
+                    {weather.temp}°C
+                  </span>
+                  <span className="text-[10px] text-white/80 font-medium">
+                    {weather.condition}
+                  </span>
+                </div>
+              </div>
+            </div>
             <div 
               className="flex items-center gap-3 mt-2 px-6 py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 shadow-lg cursor-pointer hover:bg-black/30 transition-all active:scale-95"
               onClick={() => setIsCalendarOpen(true)}

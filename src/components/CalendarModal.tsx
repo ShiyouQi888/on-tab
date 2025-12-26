@@ -88,6 +88,47 @@ const HOLIDAYS_DATA: Record<string, Holiday> = {
   "2025-10-08": { date: "2025-10-08", name: "中秋" },
   "2025-09-28": { date: "2025-09-28", name: "班", isWorkingDay: true },
   "2025-10-11": { date: "2025-10-11", name: "班", isWorkingDay: true },
+
+  // 2026
+  "2026-01-01": { date: "2026-01-01", name: "元旦" },
+  "2026-01-02": { date: "2026-01-02", name: "元旦" },
+  "2026-01-03": { date: "2026-01-03", name: "元旦" },
+  "2026-01-04": { date: "2026-01-04", name: "班", isWorkingDay: true },
+  "2026-02-15": { date: "2026-02-15", name: "春节" },
+  "2026-02-16": { date: "2026-02-16", name: "春节" },
+  "2026-02-17": { date: "2026-02-17", name: "春节" },
+  "2026-02-18": { date: "2026-02-18", name: "春节" },
+  "2026-02-19": { date: "2026-02-19", name: "春节" },
+  "2026-02-20": { date: "2026-02-20", name: "春节" },
+  "2026-02-21": { date: "2026-02-21", name: "春节" },
+  "2026-02-22": { date: "2026-02-22", name: "春节" },
+  "2026-02-23": { date: "2026-02-23", name: "春节" },
+  "2026-02-14": { date: "2026-02-14", name: "班", isWorkingDay: true },
+  "2026-02-28": { date: "2026-02-28", name: "班", isWorkingDay: true },
+  "2026-04-04": { date: "2026-04-04", name: "清明" },
+  "2026-04-05": { date: "2026-04-05", name: "清明" },
+  "2026-04-06": { date: "2026-04-06", name: "清明" },
+  "2026-05-01": { date: "2026-05-01", name: "五一" },
+  "2026-05-02": { date: "2026-05-02", name: "五一" },
+  "2026-05-03": { date: "2026-05-03", name: "五一" },
+  "2026-05-04": { date: "2026-05-04", name: "五一" },
+  "2026-05-05": { date: "2026-05-05", name: "五一" },
+  "2026-05-09": { date: "2026-05-09", name: "班", isWorkingDay: true },
+  "2026-06-19": { date: "2026-06-19", name: "端午" },
+  "2026-06-20": { date: "2026-06-20", name: "端午" },
+  "2026-06-21": { date: "2026-06-21", name: "端午" },
+  "2026-09-25": { date: "2026-09-25", name: "中秋" },
+  "2026-09-26": { date: "2026-09-26", name: "中秋" },
+  "2026-09-27": { date: "2026-09-27", name: "中秋" },
+  "2026-10-01": { date: "2026-10-01", name: "国庆" },
+  "2026-10-02": { date: "2026-10-02", name: "国庆" },
+  "2026-10-03": { date: "2026-10-03", name: "国庆" },
+  "2026-10-04": { date: "2026-10-04", name: "国庆" },
+  "2026-10-05": { date: "2026-10-05", name: "国庆" },
+  "2026-10-06": { date: "2026-10-06", name: "国庆" },
+  "2026-10-07": { date: "2026-10-07", name: "国庆" },
+  "2026-09-20": { date: "2026-09-20", name: "班", isWorkingDay: true },
+  "2026-10-10": { date: "2026-10-10", name: "班", isWorkingDay: true },
 };
 
 export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, initialDate = new Date() }) => {
@@ -137,12 +178,27 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, i
             : holiday?.isWorkingDay 
               ? 'text-gray-700 hover:bg-gray-100' 
               : holiday 
-                ? 'text-red-500 hover:bg-red-50' 
+                ? 'text-red-500 bg-red-50/50 hover:bg-red-50' 
                 : 'text-gray-700 hover:bg-gray-100'}`}
       >
-        <span>{d}</span>
+        <span className="relative z-10">{d}</span>
+        
+        {/* Holiday Badge (休/班) */}
         {holiday && (
-          <span className={`text-[8px] absolute bottom-1 leading-none font-bold ${isToday ? 'text-white/80' : holiday.isWorkingDay ? 'text-gray-400' : 'text-red-400'}`}>
+          <div className="absolute top-1 right-1 flex flex-col items-end">
+            <span className={`text-[9px] px-1 rounded-sm leading-tight scale-75 origin-top-right font-black
+              ${holiday.isWorkingDay 
+                ? 'bg-gray-200 text-gray-600' 
+                : 'bg-red-100 text-red-600'}`}>
+              {holiday.isWorkingDay ? '班' : '休'}
+            </span>
+          </div>
+        )}
+
+        {/* Holiday Name */}
+        {holiday && holiday.name !== '班' && (
+          <span className={`text-[9px] absolute bottom-1 leading-none font-bold scale-90 truncate max-w-full px-1
+            ${isToday ? 'text-white/80' : 'text-red-400'}`}>
             {holiday.name}
           </span>
         )}
