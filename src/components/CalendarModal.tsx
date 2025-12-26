@@ -89,14 +89,8 @@ const HOLIDAYS_DATA: Record<string, Holiday> = {
   "2025-09-28": { date: "2025-09-28", name: "班", isWorkingDay: true },
   "2025-10-11": { date: "2025-10-11", name: "班", isWorkingDay: true },
 
-  // 2025 年末补充 (为了测试和完整性)
-  "2025-12-20": { date: "2025-12-20", name: "休", isWorkingDay: false },
-  "2025-12-21": { date: "2025-12-21", name: "冬至", isWorkingDay: false },
-  "2025-12-24": { date: "2025-12-24", name: "平安夜" },
-  "2025-12-25": { date: "2025-12-25", name: "圣诞节" },
-  "2025-12-26": { date: "2025-12-26", name: "节日", isWorkingDay: false }, // 今天测试
-  "2025-12-27": { date: "2025-12-27", name: "休", isWorkingDay: false },
-  "2025-12-28": { date: "2025-12-28", name: "休", isWorkingDay: false },
+  // 2025 年末补充
+  "2025-12-21": { date: "2025-12-21", name: "冬至" },
   "2025-12-31": { date: "2025-12-31", name: "跨年" },
 
   // 2026
@@ -170,52 +164,60 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, i
     days.push(<div key={`empty-${i}`} className="h-10 w-10 sm:h-12 sm:w-12" />);
   }
 
-  // Add days of the month
-  for (let d = 1; d <= daysInMonth; d++) {
-    const isToday = today.getDate() === d && 
-                    today.getMonth() === viewDate.getMonth() && 
-                    today.getFullYear() === viewDate.getFullYear();
-    
-    const dateStr = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    const holiday = HOLIDAYS_DATA[dateStr];
-    
-    days.push(
-      <div 
-        key={d} 
-        data-date={dateStr}
-        className={`h-10 w-10 sm:h-12 sm:w-12 flex flex-col items-center justify-center rounded-xl text-sm font-bold transition-all relative group/day
-          ${isToday 
-            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' 
-            : holiday?.isWorkingDay 
-              ? 'text-gray-700 hover:bg-gray-100' 
-              : holiday 
-                ? 'text-red-500 bg-red-50/50 hover:bg-red-50' 
-                : 'text-gray-700 hover:bg-gray-100'}`}
-      >
-        <span className="relative z-10">{d}</span>
-        
-        {/* Holiday Badge (休/班) */}
-        {holiday && (
-          <div className="absolute top-1 right-1 flex flex-col items-end">
-            <span className={`text-[9px] px-1 rounded-sm leading-tight scale-75 origin-top-right font-black
-              ${holiday.isWorkingDay 
-                ? 'bg-gray-200 text-gray-600' 
-                : 'bg-red-100 text-red-600'}`}>
-              {holiday.isWorkingDay ? '班' : '休'}
-            </span>
-          </div>
-        )}
+    // Add days of the month
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(viewDate.getFullYear(), viewDate.getMonth(), d);
+      const dayOfWeek = date.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-        {/* Holiday Name */}
-        {holiday && holiday.name !== '班' && (
-          <span className={`text-[9px] absolute bottom-1 leading-none font-bold scale-90 truncate max-w-full px-1
-            ${isToday ? 'text-white/80' : 'text-red-400'}`}>
-            {holiday.name}
-          </span>
-        )}
-      </div>
-    );
-  }
+      const isToday = today.getDate() === d && 
+                      today.getMonth() === viewDate.getMonth() && 
+                      today.getFullYear() === viewDate.getFullYear();
+      
+      const dateStr = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const holiday = HOLIDAYS_DATA[dateStr];
+      
+      // 法定节假日或调休日
+      const isStatutoryHoliday = holiday && !holiday.isWorkingDay;
+      const isStatutoryWorkingDay = holiday && holiday.isWorkingDay;
+
+      days.push(
+        <div 
+          key={d} 
+          data-date={dateStr}
+          className={`h-10 w-10 sm:h-12 sm:w-12 flex flex-col items-center justify-center rounded-xl text-sm font-bold transition-all relative group/day
+            ${isToday 
+              ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' 
+              : isStatutoryWorkingDay 
+                ? 'text-gray-700 hover:bg-gray-100' 
+                : isStatutoryHoliday || isWeekend
+                  ? 'text-red-500 bg-red-50/50 hover:bg-red-50' 
+                  : 'text-gray-700 hover:bg-gray-100'}`}
+        >
+          <span className="relative z-10">{d}</span>
+          
+          {/* Holiday Badge (仅针对法定节假日或调休日显示 休/班) */}
+          {holiday && (
+            <div className="absolute top-1 right-1 flex flex-col items-end">
+              <span className={`text-[9px] px-1 rounded-sm leading-tight scale-75 origin-top-right font-black
+                ${holiday.isWorkingDay 
+                  ? 'bg-gray-200 text-gray-600' 
+                  : 'bg-red-100 text-red-600'}`}>
+                {holiday.isWorkingDay ? '班' : '休'}
+              </span>
+            </div>
+          )}
+
+          {/* Holiday Name (节日名称) */}
+          {holiday && holiday.name !== '班' && (
+            <span className={`text-[9px] absolute bottom-1 leading-none font-bold scale-90 truncate max-w-full px-1
+              ${isToday ? 'text-white/80' : 'text-red-400'}`}>
+              {holiday.name}
+            </span>
+          )}
+        </div>
+      );
+    }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
