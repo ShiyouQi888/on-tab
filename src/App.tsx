@@ -416,7 +416,7 @@ function App() {
       </div>
       
       {/* Left Sidebar Navigation */}
-      <div className="fixed left-6 top-1/2 -translate-y-1/2 w-16 bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl py-6 flex flex-col items-center z-40 group hover:w-48 transition-all duration-300 overflow-hidden shadow-2xl">
+      <div className="fixed left-6 top-1/2 -translate-y-1/2 w-16 max-h-[calc(100vh-48px)] bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl py-6 flex flex-col items-center z-40 group hover:w-48 transition-all duration-300 overflow-hidden shadow-2xl">
         <div 
           onClick={() => !user ? setIsAuthOpen(true) : setIsSettingsOpen(true)}
           className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-6 cursor-pointer hover:bg-white/30 transition-colors shrink-0 overflow-hidden"
