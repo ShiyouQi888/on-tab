@@ -20,7 +20,9 @@ export default defineConfig(({ mode }) => {
       'process.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY': JSON.stringify(env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY || ""),
     },
     build: {
-      sourcemap: true,
+      outDir: 'dist',
+      emptyOutDir: true,
+      sourcemap: false,
       rollupOptions: {
         input: {
           main: 'index.html',

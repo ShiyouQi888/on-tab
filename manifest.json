@@ -8,10 +8,10 @@
   "homepage_url": "https://on-tab.vercel.app",
   "default_locale": "zh_CN",
   "icons": {
-    "16": "vite.svg",
-    "32": "vite.svg",
-    "48": "vite.svg",
-    "128": "vite.svg"
+    "16": "icon.png",
+    "32": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
   },
   "permissions": [
     "storage",
