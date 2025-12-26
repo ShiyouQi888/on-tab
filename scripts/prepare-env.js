@@ -11,8 +11,17 @@ Object.keys(process.env).forEach(key => {
   }
 });
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || process.env.SUPABASE_REST_URL;
-const supabaseKey = process.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY || process.env.SUPABASE_ANON_KEY;
+const supabaseUrl = 
+  process.env.VITE_SUPABASE_URL || 
+  process.env.SUPABASE_URL || 
+  process.env.SUPABASE_REST_URL ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL; // 兼容某些 Vercel 预设
+
+const supabaseKey = 
+  process.env.VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY || 
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY; // 兼容某些 Vercel 预设
+
 
 if (supabaseUrl && supabaseKey) {
   const envContent = `VITE_SUPABASE_URL=${supabaseUrl}\nVITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=${supabaseKey}\n`;
