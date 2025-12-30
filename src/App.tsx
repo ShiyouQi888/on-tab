@@ -532,8 +532,8 @@ function App() {
       </div>
 
       {/* Main Content Area */}
-      <div className="w-full max-w-4xl flex flex-col items-center gap-12 relative z-10 pt-[5vh]">
-        <main className="flex-1 flex flex-col items-center justify-start w-full max-w-[800px] px-4">
+      <div className="w-full flex flex-col items-center gap-12 relative z-10 pt-[5vh] pl-24 pr-8">
+        <main className="flex-1 flex flex-col items-center justify-start w-full px-4">
           {/* Large Clock */}
           <div className="mb-8 flex flex-col items-center relative">
             <div className="relative">
@@ -647,7 +647,7 @@ function App() {
           </div>
 
           {/* Shortcut Grid */}
-          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-y-10 gap-x-6 w-full">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-y-10 gap-x-6 w-full justify-items-center">
             {bookmarks?.map(bookmark => (
               <a 
                 key={bookmark.id} 
