@@ -647,7 +647,7 @@ function App() {
           </div>
 
           {/* Shortcut Grid */}
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-y-10 gap-x-6 w-full justify-items-center">
+          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-y-10 gap-x-4 w-full max-w-[1200px] justify-items-center mx-auto">
             {bookmarks?.map(bookmark => (
               <a 
                 key={bookmark.id} 
