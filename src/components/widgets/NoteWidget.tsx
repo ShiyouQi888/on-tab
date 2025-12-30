@@ -10,7 +10,7 @@ export const NoteWidget: React.FC = () => {
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<number | null>(null);
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Update local content when DB note changes (e.g., after sync)
   useEffect(() => {

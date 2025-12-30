@@ -12,7 +12,7 @@ class PomodoroService {
   private mode: TimerMode = 'work';
   private timeLeft: number = MODES.work.duration;
   private isActive: boolean = false;
-  private timer: NodeJS.Timeout | null = null;
+  private timer: ReturnType<typeof setTimeout> | null = null;
   private listeners: Set<(state: PomodoroState) => void> = new Set();
 
   constructor() {
@@ -31,7 +31,9 @@ class PomodoroService {
 
   subscribe(listener: (state: PomodoroState) => void) {
     this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
+    return () => {
+      this.listeners.delete(listener);
+    };
   }
 
   private notify() {
