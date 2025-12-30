@@ -2,8 +2,8 @@ import { db } from '../db/db';
 import { bookmarkService } from './bookmarkService';
 
 export const migrationService = {
-  async importFromBrowser() {
-    return new Promise((resolve, reject) => {
+  async importFromBrowser(): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
       if (typeof chrome === 'undefined' || !chrome.bookmarks) {
         reject(new Error('Browser bookmarks API not available'));
         return;
@@ -62,8 +62,8 @@ export const migrationService = {
     this.downloadFile(html, `bookmarks-export-${new Date().toISOString().split('T')[0]}.html`, 'text/html');
   },
 
-  async importFromHTML(file: File) {
-    return new Promise((resolve, reject) => {
+  async importFromHTML(file: File): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
@@ -105,8 +105,8 @@ export const migrationService = {
     URL.revokeObjectURL(url);
   },
 
-  async importFromJSON(file: File) {
-    return new Promise((resolve, reject) => {
+  async importFromJSON(file: File): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {

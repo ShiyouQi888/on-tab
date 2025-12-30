@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 import { authService } from './authService';
 
 export const syncService = {
-  async sync() {
+  async sync(): Promise<number> {
     const user = await authService.getCurrentUser();
     if (!user) return 0;
 
