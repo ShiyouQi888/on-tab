@@ -2,7 +2,13 @@ import { db } from '../db/db';
 import { supabase } from './supabase';
 import { authService } from './authService';
 
-export const syncService = {
+export interface SyncService {
+  sync(): Promise<number>;
+  push(): Promise<void>;
+  pull(): Promise<number>;
+}
+
+export const syncService: SyncService = {
   async sync(): Promise<number> {
     const user = await authService.getCurrentUser();
     if (!user) return 0;

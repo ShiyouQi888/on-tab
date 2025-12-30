@@ -314,7 +314,7 @@ function App() {
       const pulledCount = await syncService.sync();
       // 只有当真正有数据更新时才显示通知，或者如果是手动点击同步
       if (pulledCount > 0) {
-        showToast(t('toast.syncSuccess', { count: pulledCount }), 'success');
+        showToast(t('toast.syncSuccess', { count: pulledCount as number }), 'success');
       }
     } catch (err) {
       console.error('Sync failed', err);

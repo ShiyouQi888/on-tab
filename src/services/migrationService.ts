@@ -1,7 +1,16 @@
 import { db } from '../db/db';
 import { bookmarkService } from './bookmarkService';
 
-export const migrationService = {
+export interface MigrationService {
+  importFromBrowser(): Promise<number>;
+  exportToJSON(): Promise<void>;
+  exportToHTML(): Promise<void>;
+  importFromHTML(file: File): Promise<number>;
+  importFromJSON(file: File): Promise<number>;
+  downloadFile(content: string, fileName: string, contentType: string): void;
+}
+
+export const migrationService: MigrationService = {
   async importFromBrowser(): Promise<number> {
     return new Promise<number>((resolve, reject) => {
       if (typeof chrome === 'undefined' || !chrome.bookmarks) {

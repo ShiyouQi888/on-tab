@@ -230,7 +230,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
   const handleBrowserImport = async () => {
     try {
       const count = await migrationService.importFromBrowser();
-      alert(t('toast.syncSuccess', { count }));
+      alert(t('toast.syncSuccess', { count: count as number }));
     } catch (err: any) {
       alert(t('common.error') + ': ' + err.message);
     }
@@ -249,7 +249,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
     if (file) {
       try {
         const count = await migrationService.importFromJSON(file);
-        alert(t('toast.syncSuccess', { count }));
+        alert(t('toast.syncSuccess', { count: count as number }));
         onClose();
       } catch (err: any) {
         alert(t('common.error') + ': ' + err.message);
@@ -262,7 +262,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
     if (file) {
       try {
         const count = await migrationService.importFromHTML(file);
-        alert(t('toast.syncSuccess', { count }));
+        alert(t('toast.syncSuccess', { count: count as number }));
         onClose();
       } catch (err: any) {
         alert(t('common.error') + ': ' + err.message);
