@@ -647,12 +647,12 @@ function App() {
           </div>
 
           {/* Shortcut Grid */}
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-y-10 gap-x-4 w-full max-w-[1200px] justify-items-center mx-auto">
+          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-y-10 gap-x-6 w-full max-w-[1200px] justify-items-center mx-auto">
             {bookmarks?.map(bookmark => (
               <a 
                 key={bookmark.id} 
                 href={bookmark.url}
-                className="flex flex-col items-center group relative cursor-pointer no-underline"
+                className="flex flex-col items-center group relative cursor-pointer no-underline w-full max-w-[84px]"
                 onContextMenu={(e) => handleContextMenu(e, bookmark)}
               >
                 <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center mb-3 group-hover:scale-105 group-hover:shadow-xl transition-all duration-300 relative overflow-hidden shadow-lg border border-black/5">
@@ -672,7 +672,7 @@ function App() {
             ))}
 
             <div 
-              className="flex flex-col items-center group cursor-pointer"
+              className="flex flex-col items-center group cursor-pointer w-full max-w-[84px]"
               onClick={() => {
                 setEditingBookmark(undefined);
                 setIsFormOpen(true);
