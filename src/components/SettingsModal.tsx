@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   DndContext,
   closestCenter,
@@ -113,6 +114,7 @@ const SortableCategoryItem = ({ cat, onDelete }: { cat: any, onDelete: (id: stri
 };
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onAuthOpen, currentWallpaper, onWallpaperChange, onUserUpdate, initialTab }) => {
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const wallpaperFileRef = useRef<HTMLInputElement>(null);
   const htmlInputRef = useRef<HTMLInputElement>(null);
@@ -287,7 +289,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/10 overflow-hidden border border-gray-100">
               <img src="/ontab-logo-1.svg" alt="Logo" className="w-7 h-7 object-contain" />
             </div>
-            <h2 className="text-xl font-bold text-gray-800 tracking-tight">设置中心</h2>
+            <h2 className="text-xl font-bold text-gray-800 tracking-tight">{t('settings.title')}</h2>
           </div>
 
           <nav className="flex-1 space-y-1.5">
@@ -304,7 +306,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                   }`}
                 >
                   <Icon size={18} />
-                  {tab.label}
+                  {t(`settings.tabs.${tab.id}`)}
                   {activeTab === tab.id && <ChevronRight size={14} className="ml-auto" />}
                 </button>
               );

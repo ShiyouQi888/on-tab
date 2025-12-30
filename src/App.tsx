@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { useTranslation } from 'react-i18next';
 import { db, type Bookmark } from './db/db';
 import { bookmarkService } from './services/bookmarkService';
 import { authService } from './services/authService';
@@ -55,7 +56,8 @@ import {
   Sun,
   Cloud,
   Clock,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  Languages
 } from 'lucide-react';
 
 const SEARCH_ENGINES = [
@@ -89,6 +91,7 @@ const CATEGORY_ICONS = [
 ];
 
 function App() {
+  const { t, i18n } = useTranslation();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -279,7 +282,7 @@ function App() {
         if (currentIndex < categories.length - 1) {
           const nextCat = categories[currentIndex + 1];
           setSelectedCategoryId(nextCat.id);
-          showToast(`切换至：${nextCat.name}`, 'info');
+          showToast(t('toast.switchCat', { name: nextCat.name }), 'info');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
       } else if (e.deltaY < 0 && isAtTop) {
@@ -289,11 +292,11 @@ function App() {
         if (currentIndex > 0) {
           const prevCat = categories[currentIndex - 1];
           setSelectedCategoryId(prevCat.id);
-          showToast(`切换至：${prevCat.name}`, 'info');
+          showToast(t('toast.switchCat', { name: prevCat.name }), 'info');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         } else if (currentIndex === 0) {
           setSelectedCategoryId(undefined);
-          showToast('切换至：全部书签', 'info');
+          showToast(t('toast.switchCat', { name: t('nav.allBookmarks') }), 'info');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
       }
@@ -311,11 +314,11 @@ function App() {
       const pulledCount = await syncService.sync();
       // 只有当真正有数据更新时才显示通知，或者如果是手动点击同步
       if (pulledCount > 0) {
-        showToast(`同步成功，获取了 ${pulledCount} 条更新`, 'success');
+        showToast(t('toast.syncSuccess', { count: pulledCount }), 'success');
       }
     } catch (err) {
       console.error('Sync failed', err);
-      showToast('同步失败，请检查网络连接', 'error');
+      showToast(t('toast.syncFailed'), 'error');
     } finally {
       setSyncing(false);
     }
@@ -324,33 +327,33 @@ function App() {
   const handleDelete = async (id: string) => {
     setConfirmConfig({
       isOpen: true,
-      title: '红色警告',
-      message: '确定要删除这个书签吗？删除后将无法恢复。',
+      title: t('common.warning'),
+      message: t('bookmark.deleteConfirm'),
       onConfirm: async () => {
         try {
           await bookmarkService.deleteBookmark(id);
-          showToast('已删除书签', 'success');
+          showToast(t('toast.bookmarkDeleted'), 'success');
         } catch (err) {
-          showToast('删除失败', 'error');
+          showToast(t('common.error'), 'error');
         }
       }
     });
   };
 
-  const handleDeleteCategoryFromSidebar = async (id: string) => {
+  const handleCategoryDelete = async (id: string) => {
     setConfirmConfig({
       isOpen: true,
-      title: '红色警告',
-      message: '确定要删除此分类吗？删除分类后，该分类下的书签将变为“未分类”。',
+      title: t('common.warning'),
+      message: t('category.deleteConfirm'),
       onConfirm: async () => {
         try {
           await bookmarkService.deleteCategory(id);
+          showToast(t('toast.categoryDeleted'), 'success');
           if (selectedCategoryId === id) {
             setSelectedCategoryId(undefined);
           }
-          showToast('已删除分类', 'success');
         } catch (err) {
-          showToast('删除失败', 'error');
+          showToast(t('common.error'), 'error');
         }
       }
     });
@@ -484,7 +487,7 @@ function App() {
               <Grid3X3 size={20} />
             </div>
             <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
-              全部书签
+              {t('nav.allBookmarks')}
             </span>
           </button>
 
@@ -527,21 +530,54 @@ function App() {
             <PlusCircle size={20} />
           </div>
           <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
-            添加分类
+            {t('nav.addCategory')}
           </span>
         </button>
 
-        <button 
-          onClick={() => setIsSettingsOpen(true)}
-          className="w-[calc(100%-16px)] mx-2 flex items-center py-2 mt-4 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300"
-        >
-          <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-            <MoreHorizontal size={20} />
-          </div>
-          <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
-            管理分类
-          </span>
-        </button>
+        <div className="mt-auto space-y-2 w-full">
+          <button 
+            onClick={() => {
+              const nextLang = i18n.language.startsWith('zh') ? 'en' : 'zh';
+              i18n.changeLanguage(nextLang);
+            }}
+            className="w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300 group/nav"
+            title={t('nav.switchLang')}
+          >
+            <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
+              <Languages size={20} className="group-hover/nav:scale-110 transition-transform" />
+            </div>
+            <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
+              {i18n.language.startsWith('zh') ? 'English' : '简体中文'}
+            </span>
+          </button>
+
+          <button 
+            onClick={() => user ? handleSync() : setIsAuthOpen(true)}
+            disabled={syncing}
+            className={`w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300 group/nav ${syncing ? 'animate-pulse' : ''}`}
+            title={t('nav.syncNow')}
+          >
+            <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
+              <Cloud size={20} className={`${syncing ? 'animate-spin' : 'group-hover/nav:scale-110'} transition-transform`} />
+            </div>
+            <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
+              {t('nav.syncNow')}
+            </span>
+          </button>
+
+          <button 
+            onClick={() => setIsSettingsOpen(true)}
+            className="w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300 group/nav"
+            title={t('nav.settings')}
+          >
+            <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
+              <Settings size={20} className="group-hover/nav:rotate-90 transition-transform duration-500" />
+            </div>
+            <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
+              {t('nav.settings')}
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* Top Header - Global Actions */}
@@ -671,7 +707,7 @@ function App() {
 
               <input
                 type="text"
-                placeholder="输入搜索内容"
+                placeholder={t('search.placeholder')}
                 className="flex-1 bg-transparent border-none outline-none px-4 py-2 text-gray-800 placeholder:text-gray-500 text-[16px] font-bold"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -726,7 +762,7 @@ function App() {
               <div className="w-18 h-18 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-3 group-hover:bg-white/30 group-hover:scale-105 transition-all duration-300 shadow-lg border border-white/20">
                 <Plus size={36} className="text-white/90" />
               </div>
-              <span className="text-[13px] text-white font-bold drop-shadow-md">添加</span>
+              <span className="text-[13px] text-white font-bold drop-shadow-md">{t('common.add')}</span>
             </div>
           </div>
         </main>
