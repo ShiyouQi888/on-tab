@@ -27,6 +27,26 @@ export interface Category {
   syncStatus: 'synced' | 'pending' | 'error';
 }
 
+export interface Todo {
+  id: string;
+  userId: string;
+  content: string;
+  completed: number; // 0 for incomplete, 1 for completed
+  order: number;
+  createdAt: number;
+  updatedAt: number;
+  deleted: number;
+  syncStatus: 'synced' | 'pending' | 'error';
+}
+
+export interface Note {
+  id: string;
+  userId: string;
+  content: string;
+  updatedAt: number;
+  syncStatus: 'synced' | 'pending' | 'error';
+}
+
 export interface SyncQueue {
   id?: number;
   userId: string; // 添加用户ID字段
@@ -40,13 +60,17 @@ export interface SyncQueue {
 export class AppDatabase extends Dexie {
   bookmarks!: Table<Bookmark>;
   categories!: Table<Category>;
+  todos!: Table<Todo>;
+  notes!: Table<Note>;
   syncQueue!: Table<SyncQueue>;
 
   constructor() {
     super('BookmarkNavDB');
-    this.version(4).stores({
+    this.version(6).stores({
       bookmarks: 'id, userId, title, url, categoryId, *tags, updatedAt, deleted',
       categories: 'id, userId, name, order, updatedAt, deleted',
+      todos: 'id, userId, completed, order, updatedAt, deleted',
+      notes: 'id, userId, updatedAt',
       syncQueue: '++id, userId, entityId, timestamp'
     });
   }

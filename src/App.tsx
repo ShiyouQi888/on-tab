@@ -57,7 +57,17 @@ import {
   Cloud,
   Clock,
   Calendar as CalendarIcon,
-  Languages
+  Languages,
+  ShieldCheck,
+  Database,
+  Coffee,
+  Mail,
+  CheckCircle2,
+  Circle,
+  ListTodo,
+  Copy,
+  Check,
+  Quote,
 } from 'lucide-react';
 
 const SEARCH_ENGINES = [
@@ -90,6 +100,11 @@ const CATEGORY_ICONS = [
   { id: 'layout', icon: Layout },
 ];
 
+import { TodoWidget } from './components/widgets/TodoWidget';
+import { QuoteWidget } from './components/widgets/QuoteWidget';
+import { PomodoroWidget } from './components/widgets/PomodoroWidget';
+import { NoteWidget } from './components/widgets/NoteWidget';
+
 function App() {
   const { t, i18n } = useTranslation();
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -115,9 +130,16 @@ function App() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [weather, setWeather] = useState<{ temp: number; condition: string; icon: any }>({ temp: 24, condition: t('weather.cloudy'), icon: Cloud });
   const [wallpaper, setWallpaper] = useState(localStorage.getItem('app-wallpaper') || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+  const [isZenMode, setIsZenMode] = useState(localStorage.getItem('app-zen-mode') === 'true');
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const [lastScrollTime, setLastScrollTime] = useState(0);
+
+  const toggleZenMode = () => {
+    const newMode = !isZenMode;
+    setIsZenMode(newMode);
+    localStorage.setItem('app-zen-mode', String(newMode));
+  };
 
   const changeRandomWallpaper = () => {
     const curatedWallpapers = [
@@ -462,127 +484,150 @@ function App() {
           {pullDistance > 80 ? t('settings.labels.releaseToChange') : t('settings.labels.pullToChange')}
         </div>
       </div>
-      
-      {/* Left Sidebar Navigation */}
-      <div className="fixed left-6 top-1/2 -translate-y-1/2 w-16 max-h-[calc(100vh-48px)] bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl py-6 flex flex-col items-center z-40 group hover:w-48 transition-all duration-300 overflow-hidden shadow-2xl opacity-20 hover:opacity-100">
-        <div 
-          onClick={() => !user ? setIsAuthOpen(true) : setIsSettingsOpen(true)}
-          className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-6 cursor-pointer hover:bg-white/30 transition-colors shrink-0 overflow-hidden"
+
+      {/* Zen Mode Toggle (Top Right) */}
+      <div className="fixed top-8 right-8 z-50 flex items-center gap-3">
+        <button
+          onClick={toggleZenMode}
+          className={`p-3 rounded-2xl backdrop-blur-md border transition-all duration-300 group shadow-lg ${
+            isZenMode 
+              ? 'bg-blue-500/20 border-blue-500/30 text-blue-400 hover:bg-blue-500/30' 
+              : 'bg-white/10 border-white/10 text-white/60 hover:bg-white/20 hover:text-white'
+          }`}
+          title={t('common.zenMode')}
         >
-          {userAvatar ? (
-            <img src={userAvatar} alt="Avatar" className="w-full h-full object-cover" />
+          {isZenMode ? (
+            <Sparkles size={20} className="group-hover:scale-110 transition-transform" />
           ) : (
-            <User className="text-white" size={24} />
+            <Coffee size={20} className="group-hover:scale-110 transition-transform" />
           )}
-        </div>
-        
-        <div className="w-8 h-[1px] bg-white/10 mb-4 shrink-0" />
-
-        <div className="flex-1 w-full flex flex-col items-start gap-2 overflow-y-auto overflow-x-hidden no-scrollbar">
-          <button 
-            onClick={() => setSelectedCategoryId(undefined)}
-            className={`w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg transition-all duration-300 ${!selectedCategoryId ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
-          >
-            <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-              <Grid3X3 size={20} />
-            </div>
-            <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
-              {t('nav.allBookmarks')}
-            </span>
-          </button>
-
-          {categories.map(cat => (
-            <div
-              key={cat.id}
-              className="w-[calc(100%-16px)] mx-2 relative group/cat"
-            >
-              <button
-                onClick={() => setSelectedCategoryId(cat.id)}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  handleEditCategory(cat);
-                }}
-                className={`w-full flex items-center py-2 rounded-lg transition-all duration-300 ${selectedCategoryId === cat.id ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
-              >
-                <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-                  {getCategoryIcon(cat.icon)}
-                </div>
-                <span className="whitespace-nowrap font-medium text-sm truncate opacity-0 group-hover:opacity-100 transition-all duration-300 flex-1 text-left ml-1">
-                  {cat.name}
-                </span>
-              </button>
-            </div>
-          ))}
-        </div>
-
-        <div className="w-8 h-[1px] bg-white/10 my-4 shrink-0" />
-        
-        <button 
-          onClick={() => {
-            setEditingCategory(null);
-            setNewCategoryName('');
-            setSelectedIconId('home');
-            setIsCategoryModalOpen(true);
-          }}
-          className="w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300"
-        >
-          <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-            <PlusCircle size={20} />
-          </div>
-          <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
-            {t('nav.addCategory')}
+          <span className={`absolute right-full mr-4 px-3 py-1.5 rounded-xl bg-black/40 backdrop-blur-md border border-white/10 text-xs font-bold text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`}>
+            {t('common.zenMode')}
           </span>
         </button>
+      </div>
+      
+      {/* Left Sidebar Navigation */}
+      {!isZenMode && (
+        <div className="fixed left-6 top-1/2 -translate-y-1/2 w-16 max-h-[calc(100vh-48px)] bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl py-6 flex flex-col items-center z-40 group hover:w-48 transition-all duration-300 overflow-hidden shadow-2xl opacity-20 hover:opacity-100">
+          <div 
+            onClick={() => !user ? setIsAuthOpen(true) : setIsSettingsOpen(true)}
+            className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-6 cursor-pointer hover:bg-white/30 transition-colors shrink-0 overflow-hidden"
+          >
+            {userAvatar ? (
+              <img src={userAvatar} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (            <User className="text-white" size={24} />
+            )}
+          </div>
+          
+          <div className="w-8 h-[1px] bg-white/10 mb-4 shrink-0" />
 
-        <div className="mt-auto space-y-2 w-full">
+          <div className="flex-1 w-full flex flex-col items-start gap-2 overflow-y-auto overflow-x-hidden no-scrollbar">
+            <button 
+              onClick={() => setSelectedCategoryId(undefined)}
+              className={`w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg transition-all duration-300 ${!selectedCategoryId ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
+            >
+              <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
+                <Grid3X3 size={20} />
+              </div>
+              <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
+                {t('nav.allBookmarks')}
+              </span>
+            </button>
+
+            {categories.map(cat => (
+              <div
+                key={cat.id}
+                className="w-[calc(100%-16px)] mx-2 relative group/cat"
+              >
+                <button
+                  onClick={() => setSelectedCategoryId(cat.id)}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    handleEditCategory(cat);
+                  }}
+                  className={`w-full flex items-center py-2 rounded-lg transition-all duration-300 ${selectedCategoryId === cat.id ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
+                >
+                  <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
+                    {getCategoryIcon(cat.icon)}
+                  </div>
+                  <span className="whitespace-nowrap font-medium text-sm truncate opacity-0 group-hover:opacity-100 transition-all duration-300 flex-1 text-left ml-1">
+                    {cat.name}
+                  </span>
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div className="w-8 h-[1px] bg-white/10 my-4 shrink-0" />
+          
           <button 
             onClick={() => {
-              const nextLang = i18n.language.startsWith('zh') ? 'en' : 'zh';
-              i18n.changeLanguage(nextLang);
+              setEditingCategory(null);
+              setNewCategoryName('');
+              setSelectedIconId('home');
+              setIsCategoryModalOpen(true);
             }}
-            className="w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300 group/nav"
-            title={t('nav.switchLang')}
+            className="w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300"
           >
             <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-              <Languages size={20} className="group-hover/nav:scale-110 transition-transform" />
+              <PlusCircle size={20} />
             </div>
             <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
-              {t('nav.switchLangName')}
+              {t('nav.addCategory')}
             </span>
           </button>
 
-          <button 
-            onClick={() => user ? handleSync() : setIsAuthOpen(true)}
-            disabled={syncing}
-            className={`w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300 group/nav ${syncing ? 'animate-pulse' : ''}`}
-            title={t('nav.syncNow')}
-          >
-            <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-              <Cloud size={20} className={`${syncing ? 'animate-spin' : 'group-hover/nav:scale-110'} transition-transform`} />
-            </div>
-            <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
-              {t('nav.syncNow')}
-            </span>
-          </button>
+          <div className="mt-auto space-y-2 w-full">
+            <button 
+              onClick={() => {
+                const nextLang = i18n.language.startsWith('zh') ? 'en' : 'zh';
+                i18n.changeLanguage(nextLang);
+              }}
+              className="w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300 group/nav"
+              title={t('nav.switchLang')}
+            >
+              <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
+                <Languages size={20} className="group-hover/nav:scale-110 transition-transform" />
+              </div>
+              <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
+                {t('nav.switchLangName')}
+              </span>
+            </button>
 
-          <button 
-            onClick={() => setIsSettingsOpen(true)}
-            className="w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300 group/nav"
-            title={t('nav.settings')}
-          >
-            <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-              <Settings size={20} className="group-hover/nav:rotate-90 transition-transform duration-500" />
-            </div>
-            <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
-              {t('nav.settings')}
-            </span>
-          </button>
+            <button 
+              onClick={() => user ? handleSync() : setIsAuthOpen(true)}
+              disabled={syncing}
+              className={`w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300 group/nav ${syncing ? 'animate-pulse' : ''}`}
+              title={t('nav.syncNow')}
+            >
+              <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
+                <Cloud size={20} className={`${syncing ? 'animate-spin' : 'group-hover/nav:scale-110'} transition-transform`} />
+              </div>
+              <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
+                {t('nav.syncNow')}
+              </span>
+            </button>
+
+            <button 
+              onClick={() => setIsSettingsOpen(true)}
+              className="w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300 group/nav"
+              title={t('nav.settings')}
+            >
+              <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
+                <Settings size={20} className="group-hover/nav:rotate-90 transition-transform duration-500" />
+              </div>
+              <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
+                {t('nav.settings')}
+              </span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main Content Area */}
-      <div className="w-full flex flex-col items-center gap-12 relative z-10 pt-[5vh] pl-24 pr-8">
-        <main className="flex-1 flex flex-col items-center justify-start w-full px-4">
+      <div className={`w-full flex flex-row items-start justify-center gap-12 relative z-10 pt-[5vh] pr-8 ${isZenMode ? 'pl-8' : 'pl-24'}`}>
+        <main className={`flex-1 flex flex-col items-center justify-start max-w-[1200px] w-full px-4 ${isZenMode ? 'h-[90vh]' : ''}`}>
           {/* Large Clock */}
           <div className="mb-8 flex flex-col items-center relative">
             <div className="relative">
@@ -695,44 +740,61 @@ function App() {
             </div>
           </div>
 
-          {/* Shortcut Grid */}
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-y-10 gap-x-6 w-full max-w-[1280px] justify-items-center mx-auto">
-            {bookmarks?.map(bookmark => (
-              <a 
-                key={bookmark.id} 
-                href={bookmark.url}
-                className="flex flex-col items-center group relative cursor-pointer no-underline w-full max-w-[90px]"
-                onContextMenu={(e) => handleContextMenu(e, bookmark)}
-              >
-                <div className="w-18 h-18 bg-white rounded-2xl flex items-center justify-center mb-3 group-hover:scale-105 group-hover:shadow-xl transition-all duration-300 relative overflow-hidden shadow-lg border border-black/5">
-                  {bookmark.icon ? (
-                    <img src={bookmark.icon} alt="" className="w-full h-full object-cover" onError={(e) => {
-                      (e.target as HTMLImageElement).src = `https://www.google.com/s2/favicons?domain=${new URL(bookmark.url).hostname}&sz=128`;
-                      (e.target as HTMLImageElement).className = "w-10 h-10 object-contain";
-                    }} />
-                  ) : (
-                    <Globe size={32} className="text-gray-400" />
-                  )}
-                </div>
-                <span className="text-[13px] text-white font-bold w-full truncate text-center px-1 drop-shadow-md">
-                  {bookmark.title}
-                </span>
-              </a>
-            ))}
+          {/* Shortcut Grid - Hidden in Zen Mode */}
+          {!isZenMode && (
+            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-y-10 gap-x-6 w-full max-w-[1280px] justify-items-center mx-auto">
+              {bookmarks?.map(bookmark => (
+                <a 
+                  key={bookmark.id} 
+                  href={bookmark.url}
+                  className="flex flex-col items-center group relative cursor-pointer no-underline w-full max-w-[90px]"
+                  onContextMenu={(e) => handleContextMenu(e, bookmark)}
+                >
+                  <div className="w-18 h-18 bg-white rounded-2xl flex items-center justify-center mb-3 group-hover:scale-105 group-hover:shadow-xl transition-all duration-300 relative overflow-hidden shadow-lg border border-black/5">
+                    {bookmark.icon ? (
+                      <img src={bookmark.icon} alt="" className="w-full h-full object-cover" onError={(e) => {
+                        (e.target as HTMLImageElement).src = `https://www.google.com/s2/favicons?domain=${new URL(bookmark.url).hostname}&sz=128`;
+                        (e.target as HTMLImageElement).className = "w-10 h-10 object-contain";
+                      }} />
+                    ) : (
+                      <Globe size={32} className="text-gray-400" />
+                    )}
+                  </div>
+                  <span className="text-[13px] text-white font-bold w-full truncate text-center px-1 drop-shadow-md">
+                    {bookmark.title}
+                  </span>
+                </a>
+              ))}
 
-            <div 
-              className="flex flex-col items-center group cursor-pointer w-full max-w-[90px]"
-              onClick={() => {
-                setEditingBookmark(undefined);
-                setIsFormOpen(true);
-              }}
-            >
-              <div className="w-18 h-18 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-3 group-hover:bg-white/30 group-hover:scale-105 transition-all duration-300 shadow-lg border border-white/20">
-                <Plus size={36} className="text-white/90" />
+              <div 
+                className="flex flex-col items-center group cursor-pointer w-full max-w-[90px]"
+                onClick={() => {
+                  setEditingBookmark(undefined);
+                  setIsFormOpen(true);
+                }}
+              >
+                <div className="w-18 h-18 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-3 group-hover:bg-white/30 group-hover:scale-105 transition-all duration-300 shadow-lg border border-white/20">
+                  <Plus size={36} className="text-white/90" />
+                </div>
+                <span className="text-[13px] text-white font-bold drop-shadow-md">{t('common.add')}</span>
               </div>
-              <span className="text-[13px] text-white font-bold drop-shadow-md">{t('common.add')}</span>
             </div>
-          </div>
+          )}
+
+          {/* Zen Mode Bottom Widgets */}
+          {isZenMode && (
+            <div className="flex flex-col items-center w-full max-w-[1200px] mt-auto pb-12 gap-8">
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <TodoWidget />
+                <PomodoroWidget />
+                <NoteWidget />
+                <div className="flex flex-col gap-6">
+                  <QuoteWidget />
+                  {/* More Zen widgets can go here */}
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
 

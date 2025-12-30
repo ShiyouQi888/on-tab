@@ -731,7 +731,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                       <img src="/ontab-logo-1.svg" alt="On Tab Logo" className="w-14 h-14 object-contain" />
                     </div>
                     <h4 className="text-xl font-black text-gray-800 mb-2">On Tab</h4>
-                    <p className="text-blue-600 font-bold text-sm mb-6">{t('settings.labels.version')} 1.0.0</p>
+                    <p className="text-blue-600 font-bold text-sm mb-6">{t('settings.labels.version')} 1.1.0</p>
                     
                     <div className="space-y-4 text-left max-w-sm mx-auto">
                       <div className="flex items-start gap-3">

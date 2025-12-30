@@ -25,8 +25,9 @@ const resources = {
         settings: 'Settings',
         all: 'All',
         none: 'None',
-        back: 'Back',
-        home: 'Home',
+        back: '返回',
+        home: '首页',
+        zenMode: 'Zen Mode',
         privacy: 'Privacy Policy',
         contact: 'Contact Us',
       },
@@ -302,6 +303,52 @@ const resources = {
         swReady: 'Service Worker ready',
         swConnecting: 'Connecting to Service Worker...',
         switchCat: 'Switch to: {{name}}',
+      },
+      widgets: {
+        todo: {
+          title: 'Todo List',
+          placeholder: 'Add a new task...',
+          empty: 'No tasks yet',
+          itemsCount: '{{count}} items remaining',
+        },
+        quote: {
+          title: 'Daily Quote',
+          refresh: 'Refresh',
+          copy: 'Copy',
+        },
+        pomodoro: {
+          title: 'Pomodoro',
+          modes: {
+            work: 'Focus',
+            shortBreak: 'Short Break',
+            longBreak: 'Long Break',
+          },
+          status: {
+            running: 'Focusing',
+            paused: 'Paused',
+          },
+          notifications: {
+            work: {
+              title: 'Focus Session Finished',
+              body: 'Time for a break! You have worked hard.',
+            },
+            shortBreak: {
+              title: 'Break Finished',
+              body: 'Ready to focus again?',
+            },
+            longBreak: {
+              title: 'Long Break Finished',
+              body: 'Let\'s get back to work!',
+            }
+          }
+        },
+        note: {
+          title: 'Quick Note',
+          placeholder: 'Type your thoughts here...',
+          saving: 'Saving...',
+          lastSaved: 'Saved at {{time}}',
+          charCount: '{{count}} characters',
+        }
       }
     }
   },
@@ -329,6 +376,7 @@ const resources = {
         none: '无',
         back: '返回',
         home: '首页',
+        zenMode: '纯净模式',
         privacy: '隐私政策',
         contact: '联系我们',
       },
@@ -604,6 +652,52 @@ const resources = {
         swReady: '离线缓存已就绪',
         swConnecting: '正在连接服务进程...',
         switchCat: '已切换至：{{name}}',
+      },
+      widgets: {
+        todo: {
+          title: '待办清单',
+          placeholder: '添加新任务...',
+          empty: '暂无任务',
+          itemsCount: '剩余 {{count}} 项',
+        },
+        quote: {
+          title: '每日一言',
+          refresh: '刷新',
+          copy: '复制',
+        },
+        pomodoro: {
+          title: '番茄钟',
+          modes: {
+            work: '专注',
+            shortBreak: '短休',
+            longBreak: '长休',
+          },
+          status: {
+            running: '专注中',
+            paused: '已暂停',
+          },
+          notifications: {
+            work: {
+              title: '专注结束',
+              body: '辛苦了！休息一下吧。',
+            },
+            shortBreak: {
+              title: '短休结束',
+              body: '准备好开始下一段专注了吗？',
+            },
+            longBreak: {
+              title: '长休结束',
+              body: '休息充分，继续加油！',
+            }
+          }
+        },
+        note: {
+          title: '随手便签',
+          placeholder: '在此输入您的灵感或备忘...',
+          saving: '保存中...',
+          lastSaved: '最后保存于 {{time}}',
+          charCount: '{{count}} 个字符',
+        }
       }
     }
   }

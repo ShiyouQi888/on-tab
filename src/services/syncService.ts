@@ -66,6 +66,7 @@ export const syncService: SyncService = {
     // 物理删除本地标记为 deleted 的数据
     await db.bookmarks.where('userId').equals(userId).and(b => b.deleted === 1 && b.syncStatus === 'synced').delete();
     await db.categories.where('userId').equals(userId).and(c => c.deleted === 1 && c.syncStatus === 'synced').delete();
+    await db.todos.where('userId').equals(userId).and(t => t.deleted === 1 && t.syncStatus === 'synced').delete();
   },
 
   async mergeLocalData(userId: string) {
@@ -90,6 +91,15 @@ export const syncService: SyncService = {
       });
     }
 
+    // 迁移待办事项
+    const guestTodos = await db.todos.where('userId').equals(guestUserId).toArray();
+    for (const todo of guestTodos) {
+      await db.todos.update(todo.id, {
+        userId,
+        syncStatus: 'pending'
+      });
+    }
+
     // 处理那些已经是当前用户但 syncStatus 为空的数据（兼容旧数据）
     await db.categories.where('userId').equals(userId).modify(c => {
       if (!c.syncStatus) c.syncStatus = 'pending';
@@ -97,9 +107,12 @@ export const syncService: SyncService = {
     await db.bookmarks.where('userId').equals(userId).modify(b => {
       if (!b.syncStatus) b.syncStatus = 'pending';
     });
+    await db.todos.where('userId').equals(userId).modify(t => {
+      if (!t.syncStatus) t.syncStatus = 'pending';
+    });
 
-    if (guestCategories.length > 0 || guestBookmarks.length > 0) {
-      console.log(`已将 ${guestCategories.length} 个分类和 ${guestBookmarks.length} 个书签迁移至当前用户`);
+    if (guestCategories.length > 0 || guestBookmarks.length > 0 || guestTodos.length > 0) {
+      console.log(`已迁移数据至当前用户: ${guestCategories.length} 分类, ${guestBookmarks.length} 书签, ${guestTodos.length} 待办`);
     }
   },
 
@@ -216,6 +229,40 @@ export const syncService: SyncService = {
         console.error(`Unexpected error pushing bookmark ${bookmark.id}:`, err);
       }
     }
+
+    // 3. 同步待办事项
+    const pendingTodos = await db.todos
+      .where('userId').equals(userId)
+      .and(t => t.syncStatus !== 'synced')
+      .toArray();
+    
+    console.log(`找到 ${pendingTodos.length} 个本地待办需要同步`);
+
+    for (const todo of pendingTodos) {
+      try {
+        const { syncStatus, userId: localUserId, createdAt, updatedAt, ...rest } = todo;
+        const { error } = await supabase
+          .from('todos')
+          .upsert({
+            ...rest,
+            created_at: createdAt,
+            updated_at: updatedAt,
+            user_id: userId
+          }, {
+            onConflict: 'id'
+          });
+        
+        if (!error) {
+          await db.todos.update(todo.id, { syncStatus: 'synced' });
+          console.log(`待办已同步到云端: ${todo.content}`);
+        } else {
+          console.error(`Push todo ${todo.id} error:`, error);
+        }
+      } catch (err) {
+        console.error(`Unexpected error pushing todo ${todo.id}:`, err);
+      }
+    }
+
     console.log('本地同步到远程完成');
   },
 
@@ -294,6 +341,40 @@ export const syncService: SyncService = {
         console.log(`本地书签 ${local.title} 较新，等待推送到远程`);
       }
     }
+
+    // 3. 拉取待办事项
+    const { data: remoteTodos, error: todoError } = await supabase
+      .from('todos')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (todoError) {
+      console.error('Pull todos error:', todoError);
+    } else {
+      console.log(`获取到 ${remoteTodos?.length || 0} 个远程待办`);
+      for (const remote of remoteTodos || []) {
+        const local = await db.todos.get(remote.id);
+        const remoteUpdatedAt = typeof remote.updated_at === 'number'
+          ? remote.updated_at
+          : new Date(remote.updated_at).getTime();
+        
+        if (!local || remoteUpdatedAt > (local.updatedAt || 0)) {
+          const { user_id, created_at, updated_at, ...rest } = remote;
+          await db.todos.put({
+            ...rest,
+            createdAt: typeof created_at === 'number' ? created_at : new Date(created_at).getTime(),
+            updatedAt: remoteUpdatedAt,
+            userId,
+            syncStatus: 'synced'
+          });
+          pulledCount++;
+          console.log(`更新本地待办: ${remote.content || remote.id}`);
+        } else if (local && local.syncStatus !== 'synced') {
+          console.log(`本地待办 ${local.content} 较新，等待推送到远程`);
+        }
+      }
+    }
+
     console.log(`远程拉取完成，共更新了 ${pulledCount} 条数据`);
     return pulledCount;
   },
@@ -329,10 +410,25 @@ export const syncService: SyncService = {
       })
       .subscribe();
 
+    // 订阅待办事项变更
+    const todoChannel = supabase
+      .channel('todos_changes')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'todos',
+        filter: `user_id=eq.${userId}` 
+      }, payload => {
+        console.log('远程待办变更!', payload);
+        onUpdate();
+      })
+      .subscribe();
+
     return {
       unsubscribe: () => {
         bookmarkChannel.unsubscribe();
         categoryChannel.unsubscribe();
+        todoChannel.unsubscribe();
       }
     };
   }
