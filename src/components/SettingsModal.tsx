@@ -68,6 +68,7 @@ const AVATAR_STYLES = [
 ];
 
 const SortableCategoryItem = ({ cat, onDelete }: { cat: any, onDelete: (id: string) => void }) => {
+  const { t } = useTranslation();
   const {
     attributes,
     listeners,

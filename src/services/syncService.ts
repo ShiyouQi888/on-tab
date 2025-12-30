@@ -4,8 +4,11 @@ import { authService } from './authService';
 
 export interface SyncService {
   sync(): Promise<number>;
-  push(): Promise<void>;
-  pull(): Promise<number>;
+  mergeLocalData(userId: string): Promise<void>;
+  pushLocalChanges(userId: string): Promise<void>;
+  pullRemoteChanges(userId: string): Promise<number>;
+  cleanupDeletedData(userId: string): Promise<void>;
+  subscribeToChanges(userId: string, onUpdate: () => void): { unsubscribe: () => void };
 }
 
 export const syncService: SyncService = {
