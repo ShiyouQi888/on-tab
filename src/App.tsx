@@ -114,6 +114,7 @@ function App() {
   const [wallpaper, setWallpaper] = useState(localStorage.getItem('app-wallpaper') || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
+  const [lastScrollTime, setLastScrollTime] = useState(0);
 
   const changeRandomWallpaper = () => {
     const curatedWallpapers = [
@@ -257,6 +258,50 @@ function App() {
     ];
     setWeather(conditions[Math.floor(Math.random() * conditions.length)]);
   }, []);
+
+  useEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      // 如果正在搜索，不执行切换
+      if (searchQuery) return;
+      
+      const now = Date.now();
+      // 防抖：500ms 内只触发一次切换
+      if (now - lastScrollTime < 500) return;
+
+      // 只有在页面没有滚动条或者已经滚动到底部/顶部时才切换分类
+      const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 50;
+      const isAtTop = window.scrollY <= 50;
+
+      if (e.deltaY > 0 && isAtBottom) {
+        // 向下滚动 -> 下一个分类
+        setLastScrollTime(now);
+        const currentIndex = !selectedCategoryId ? -1 : categories.findIndex(c => c.id === selectedCategoryId);
+        if (currentIndex < categories.length - 1) {
+          const nextCat = categories[currentIndex + 1];
+          setSelectedCategoryId(nextCat.id);
+          showToast(`切换至：${nextCat.name}`, 'info');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } else if (e.deltaY < 0 && isAtTop) {
+        // 向上滚动 -> 上一个分类
+        setLastScrollTime(now);
+        const currentIndex = !selectedCategoryId ? -1 : categories.findIndex(c => c.id === selectedCategoryId);
+        if (currentIndex > 0) {
+          const prevCat = categories[currentIndex - 1];
+          setSelectedCategoryId(prevCat.id);
+          showToast(`切换至：${prevCat.name}`, 'info');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (currentIndex === 0) {
+          setSelectedCategoryId(undefined);
+          showToast('切换至：全部书签', 'info');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, [selectedCategoryId, categories, lastScrollTime, searchQuery]);
 
   const handleSync = async () => {
     if (!user) return;
