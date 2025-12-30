@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { authService } from '../services/authService';
 import { X, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
 import { isSupabaseConfigured } from '../services/supabase';
@@ -9,6 +10,7 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
+  const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,7 +24,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
     setSuccessMsg('');
 
     if (!isSupabaseConfigured) {
-      setError('未检测到数据库配置。如果您是开发者，请在 .env 文件或 Netlify 后台配置 Supabase 环境变量 (VITE_SUPABASE_URL 和 VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY)。');
+      setError(t('auth.noConfig'));
       return;
     }
 
@@ -35,13 +37,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
         onClose();
       } else {
         await authService.signUp(email, password);
-        setSuccessMsg('注册成功！一封验证邮件已发送至您的邮箱，请前往查看并点击链接完成验证。验证后即可返回此处登录。');
+        setSuccessMsg(t('auth.signUpSuccess'));
       }
     } catch (err: any) {
       console.error('Auth error:', err);
-      let message = err.message || '操作失败';
+      let message = err.message || t('auth.opFailed');
       if (message === 'Failed to fetch') {
-        message = '网络连接失败，请检查您的网络连接或 Supabase 配置是否正确。';
+        message = t('auth.networkError');
       }
       setError(message);
     } finally {
@@ -58,7 +60,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
             <div className="absolute bottom-0 right-0 w-32 h-32 bg-white rounded-full translate-x-16 translate-y-16" />
           </div>
           <h2 className="text-3xl font-bold text-white relative z-10 tracking-tight">
-            {isLogin ? '欢迎回来' : '创建账号'}
+            {isLogin ? t('auth.welcomeBack') : t('auth.createAccount')}
           </h2>
           <button 
             onClick={onClose} 
@@ -70,12 +72,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
 
         <div className="p-8">
           <p className="text-gray-500 text-sm text-center mb-8 font-medium">
-            {isLogin ? '登录您的账号以同步您的所有书签' : '注册以开始跨设备同步您的书签'}
+            {isLogin ? t('auth.loginDesc') : t('auth.signUpDesc')}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">邮箱地址</label>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">{t('auth.emailLabel')}</label>
               <div className="relative group">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
                   <Mail size={18} />
@@ -92,7 +94,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">密码</label>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider ml-1">{t('auth.passwordLabel')}</label>
               <div className="relative group">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors">
                   <Lock size={18} />
@@ -112,7 +114,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
               <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl flex flex-col gap-3 text-blue-700 animate-in fade-in slide-in-from-top-2">
                 <div className="flex items-center gap-2 font-bold">
                   <div className="w-2 h-2 bg-blue-600 rounded-full" />
-                  注册申请已提交
+                  {t('auth.signUpSubmitted')}
                 </div>
                 <p className="text-sm leading-relaxed">
                   {successMsg}
@@ -125,7 +127,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
                   }}
                   className="text-xs font-bold text-blue-600 hover:text-blue-800 self-end underline decoration-2 underline-offset-4"
                 >
-                  去登录 →
+                  {t('auth.goToLogin')}
                 </button>
               </div>
             )}
@@ -146,7 +148,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
                 <Loader2 className="animate-spin" size={20} />
               ) : (
                 <>
-                  <span>{isLogin ? '立即登录' : '立即注册'}</span>
+                  <span>{isLogin ? t('auth.loginNow') : t('auth.signUpNow')}</span>
                   <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                 </>
               )}
@@ -155,13 +157,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
 
           <div className="mt-8 pt-6 border-t border-gray-100 text-center">
             <p className="text-gray-500 text-sm">
-              {isLogin ? '还没有账号？' : '已经有账号了？'}
+              {isLogin ? t('auth.noAccount') : t('auth.hasAccount')}
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
                 className="ml-1 text-blue-600 font-bold hover:text-blue-700 transition-colors"
               >
-                {isLogin ? '点击注册' : '点击登录'}
+                {isLogin ? t('auth.clickSignUp') : t('auth.clickLogin')}
               </button>
             </p>
           </div>

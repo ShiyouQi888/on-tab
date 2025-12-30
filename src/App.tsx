@@ -61,33 +61,33 @@ import {
 } from 'lucide-react';
 
 const SEARCH_ENGINES = [
-  { id: 'bing', name: '必应', url: 'https://www.bing.com/search?q=', icon: 'https://www.google.com/s2/favicons?domain=bing.com&sz=64' },
-  { id: 'baidu', name: '百度', url: 'https://www.baidu.com/s?wd=', icon: 'https://www.google.com/s2/favicons?domain=baidu.com&sz=64' },
-  { id: 'google', name: '谷歌', url: 'https://www.google.com/search?q=', icon: 'https://www.google.com/s2/favicons?domain=google.com&sz=64' },
-  { id: 'github', name: 'GitHub', url: 'https://github.com/search?q=', icon: 'https://www.google.com/s2/favicons?domain=github.com&sz=64' },
-  { id: 'bilibili', name: 'B站', url: 'https://search.bilibili.com/all?keyword=', icon: 'https://www.google.com/s2/favicons?domain=bilibili.com&sz=64' },
-  { id: 'zhihu', name: '知乎', url: 'https://www.zhihu.com/search?q=', icon: 'https://www.google.com/s2/favicons?domain=zhihu.com&sz=64' },
+  { id: 'bing', url: 'https://www.bing.com/search?q=', icon: 'https://www.google.com/s2/favicons?domain=bing.com&sz=64' },
+  { id: 'baidu', url: 'https://www.baidu.com/s?wd=', icon: 'https://www.google.com/s2/favicons?domain=baidu.com&sz=64' },
+  { id: 'google', url: 'https://www.google.com/search?q=', icon: 'https://www.google.com/s2/favicons?domain=google.com&sz=64' },
+  { id: 'github', url: 'https://github.com/search?q=', icon: 'https://www.google.com/s2/favicons?domain=github.com&sz=64' },
+  { id: 'bilibili', url: 'https://search.bilibili.com/all?keyword=', icon: 'https://www.google.com/s2/favicons?domain=bilibili.com&sz=64' },
+  { id: 'zhihu', url: 'https://www.zhihu.com/search?q=', icon: 'https://www.google.com/s2/favicons?domain=zhihu.com&sz=64' },
 ];
 
 const CATEGORY_ICONS = [
-  { id: 'home', icon: Home, label: '首页' },
-  { id: 'sparkles', icon: Sparkles, label: 'AI' },
-  { id: 'briefcase', icon: Briefcase, label: '办公' },
-  { id: 'wrench', icon: Wrench, label: '工具' },
-  { id: 'shopping-bag', icon: ShoppingBag, label: '购物' },
-  { id: 'palette', icon: Palette, label: '设计' },
-  { id: 'gamepad', icon: Gamepad2, label: '游戏' },
-  { id: 'book', icon: BookOpen, label: '阅读' },
-  { id: 'music', icon: Music, label: '音乐' },
-  { id: 'tv', icon: Tv, label: '影视' },
-  { id: 'utensils', icon: Utensils, label: '美食' },
-  { id: 'plane', icon: Plane, label: '旅游' },
-  { id: 'heart', icon: Heart, label: '健康' },
-  { id: 'dumbbell', icon: Dumbbell, label: '运动' },
-  { id: 'film', icon: Film, label: '娱乐' },
-  { id: 'message', icon: MessageCircle, label: '社交' },
-  { id: 'brain', icon: Brain, label: '学术' },
-  { id: 'layout', icon: Layout, label: '其他' },
+  { id: 'home', icon: Home },
+  { id: 'sparkles', icon: Sparkles },
+  { id: 'briefcase', icon: Briefcase },
+  { id: 'wrench', icon: Wrench },
+  { id: 'shopping-bag', icon: ShoppingBag },
+  { id: 'palette', icon: Palette },
+  { id: 'gamepad', icon: Gamepad2 },
+  { id: 'book', icon: BookOpen },
+  { id: 'music', icon: Music },
+  { id: 'tv', icon: Tv },
+  { id: 'utensils', icon: Utensils },
+  { id: 'plane', icon: Plane },
+  { id: 'heart', icon: Heart },
+  { id: 'dumbbell', icon: Dumbbell },
+  { id: 'film', icon: Film },
+  { id: 'message', icon: MessageCircle },
+  { id: 'brain', icon: Brain },
+  { id: 'layout', icon: Layout },
 ];
 
 function App() {
@@ -113,7 +113,7 @@ function App() {
   const [syncing, setSyncing] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [weather, setWeather] = useState<{ temp: number; condition: string; icon: any }>({ temp: 24, condition: '多云', icon: Cloud });
+  const [weather, setWeather] = useState<{ temp: number; condition: string; icon: any }>({ temp: 24, condition: t('weather.cloudy'), icon: Cloud });
   const [wallpaper, setWallpaper] = useState(localStorage.getItem('app-wallpaper') || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
@@ -145,7 +145,7 @@ function App() {
     
     setWallpaper(nextWallpaper);
     localStorage.setItem('app-wallpaper', nextWallpaper);
-    showToast('壁纸已更换', 'info');
+    showToast(t('toast.wallpaperUpdated'), 'info');
   };
 
   const [confirmConfig, setConfirmConfig] = useState<{
@@ -197,11 +197,11 @@ function App() {
       if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
         chrome.runtime.sendMessage({ type: 'PING' }, (response) => {
           if (chrome.runtime.lastError) {
-            console.warn('Service Worker 尝试连接中...', chrome.runtime.lastError.message);
+            console.warn(t('toast.swConnecting'), chrome.runtime.lastError.message);
             // 可能是 SW 还没准备好，1秒后重试一次
             setTimeout(checkServiceWorker, 1000);
           } else {
-            console.log('Service Worker 已就绪:', response);
+            console.log(t('toast.swReady'), response);
           }
         });
       }
@@ -254,10 +254,10 @@ function App() {
   useEffect(() => {
     // 模拟天气数据
     const conditions = [
-      { temp: 24, condition: '多云', icon: Cloud },
-      { temp: 28, condition: '晴朗', icon: Sun },
-      { temp: 22, condition: '小雨', icon: CloudDrizzle },
-      { temp: 18, condition: '阵雨', icon: CloudRain }
+      { temp: 24, condition: t('weather.cloudy'), icon: Cloud },
+      { temp: 28, condition: t('weather.sunny'), icon: Sun },
+      { temp: 22, condition: t('weather.drizzle'), icon: CloudDrizzle },
+      { temp: 18, condition: t('weather.rain'), icon: CloudRain }
     ];
     setWeather(conditions[Math.floor(Math.random() * conditions.length)]);
   }, []);
@@ -372,9 +372,9 @@ function App() {
   const handleChangeCategory = async (bookmarkId: string, categoryId: string | undefined) => {
     try {
       await bookmarkService.updateBookmark(bookmarkId, { categoryId });
-      showToast('分类已更新', 'success');
+      showToast(t('toast.categoryUpdated'), 'success');
     } catch (err) {
-      showToast('更新失败', 'error');
+      showToast(t('common.error'), 'error');
     }
   };
 
@@ -386,16 +386,16 @@ function App() {
           name: newCategoryName,
           icon: selectedIconId
         });
-        showToast('分类已更新', 'success');
+        showToast(t('toast.categoryUpdated'), 'success');
       } else {
         await bookmarkService.addCategory(newCategoryName, selectedIconId);
-        showToast('分类已添加', 'success');
+        showToast(t('toast.categoryAdded'), 'success');
       }
       setIsCategoryModalOpen(false);
       setNewCategoryName('');
       setEditingCategory(null);
     } catch (err) {
-      showToast('保存失败', 'error');
+      showToast(t('toast.saveFailed'), 'error');
     }
   };
 
@@ -459,12 +459,12 @@ function App() {
         </div>
         {/* Pull Hint */}
         <div className="absolute top-[110%] left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap text-[10px] text-white/60 font-bold uppercase tracking-[0.2em] pointer-events-none">
-          {pullDistance > 80 ? '松开更换' : '下拉更换壁纸'}
+          {pullDistance > 80 ? t('settings.labels.releaseToChange') : t('settings.labels.pullToChange')}
         </div>
       </div>
       
       {/* Left Sidebar Navigation */}
-      <div className="fixed left-6 top-1/2 -translate-y-1/2 w-16 max-h-[calc(100vh-48px)] bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl py-6 flex flex-col items-center z-40 group hover:w-48 transition-all duration-300 overflow-hidden shadow-2xl">
+      <div className="fixed left-6 top-1/2 -translate-y-1/2 w-16 max-h-[calc(100vh-48px)] bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl py-6 flex flex-col items-center z-40 group hover:w-48 transition-all duration-300 overflow-hidden shadow-2xl opacity-20 hover:opacity-100">
         <div 
           onClick={() => !user ? setIsAuthOpen(true) : setIsSettingsOpen(true)}
           className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-6 cursor-pointer hover:bg-white/30 transition-colors shrink-0 overflow-hidden"
@@ -547,7 +547,7 @@ function App() {
               <Languages size={20} className="group-hover/nav:scale-110 transition-transform" />
             </div>
             <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
-              {i18n.language.startsWith('zh') ? 'English' : '简体中文'}
+              {t('nav.switchLangName')}
             </span>
           </button>
 
@@ -580,38 +580,6 @@ function App() {
         </div>
       </div>
 
-      {/* Top Header - Global Actions */}
-      <div className="fixed top-6 left-8 right-8 flex items-center justify-end z-40">
-        <div className="flex items-center gap-4">
-          {user ? (
-            <div className="flex items-center gap-4 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-              <span className="text-sm text-white font-medium">{user.email}</span>
-              <button 
-                onClick={handleSync}
-                disabled={syncing}
-                className={`p-1.5 rounded-full hover:bg-white/20 text-white transition-all group/sync active:scale-90 ${syncing ? 'opacity-50' : ''}`}
-                title="立即同步"
-              >
-                <RefreshCw size={14} className={`${syncing ? 'animate-spin' : 'group-hover/sync:rotate-180 transition-transform duration-500'}`} />
-              </button>
-              <button 
-                onClick={() => authService.signOut()}
-                className="text-xs text-white/60 hover:text-white transition-colors"
-              >
-                退出
-              </button>
-            </div>
-          ) : (
-            <button 
-              onClick={() => setIsAuthOpen(true)}
-              className="bg-white/20 backdrop-blur-md text-white px-6 py-2.5 rounded-full hover:bg-white/30 transition-all border border-white/20 text-sm font-medium shadow-lg"
-            >
-              云端同步
-            </button>
-          )}
-        </div>
-      </div>
-
       {/* Main Content Area */}
       <div className="w-full flex flex-col items-center gap-12 relative z-10 pt-[5vh] pl-24 pr-8">
         <main className="flex-1 flex flex-col items-center justify-start w-full px-4">
@@ -619,7 +587,7 @@ function App() {
           <div className="mb-8 flex flex-col items-center relative">
             <div className="relative">
               <h1 className="text-[120px] font-bold text-white leading-none tracking-tighter drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)] select-none">
-                {currentTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false })}
+                {currentTime.toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit', hour12: false })}
               </h1>
               {/* Weather info at the bottom-right of the time */}
               <div className="absolute left-[calc(100%+0.5rem)] bottom-6 flex items-center gap-2 px-3 py-1 bg-black/20 backdrop-blur-md rounded-full border border-white/10 opacity-90 whitespace-nowrap">
@@ -641,7 +609,7 @@ function App() {
               onClick={() => setIsCalendarOpen(true)}
             >
               <span className="text-lg font-medium text-white/90 tracking-widest uppercase">
-                {currentTime.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' })}
+                {currentTime.toLocaleDateString(i18n.language, { month: 'long', day: 'numeric', weekday: 'long' })}
               </span>
             </div>
           </div>
@@ -684,7 +652,7 @@ function App() {
                               <img src={engine.icon} alt="" className="w-full h-full object-cover" />
                             </div>
                             <span className={`text-xs font-bold transition-colors ${selectedSearchEngine.id === engine.id ? 'text-blue-600' : 'text-gray-700 group-hover/item:text-gray-900'}`}>
-                              {engine.name}
+                              {t('search.engines.' + engine.id)}
                             </span>
                           </button>
                         ))}
@@ -696,7 +664,7 @@ function App() {
                             <Plus size={24} className="text-blue-500 group-hover/add:text-white transition-colors" />
                           </div>
                           <span className="text-xs font-bold text-blue-600 group-hover/item:text-blue-700">
-                            添加引擎
+                            {t('search.addEngine')}
                           </span>
                         </button>
                       </div>
@@ -775,15 +743,15 @@ function App() {
           className="flex items-center gap-2 px-4 py-2.5 bg-white/20 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/30 text-white text-sm font-bold transition-all shadow-lg active:scale-95 group"
         >
           <Settings size={18} className="group-hover:rotate-90 transition-transform duration-500" />
-          <span>设置</span>
+          <span>{t('common.settings')}</span>
         </button>
       </div>
 
       <footer className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
         <div className="flex items-center gap-2 px-4 py-2 bg-black/10 backdrop-blur-sm rounded-full border border-white/5 transition-opacity hover:opacity-100 opacity-60">
           <span className="text-[11px] text-white/80 font-medium tracking-wide">
-            © {new Date().getFullYear()} On Tab · 由 
-            <span className="text-white font-bold ml-1">北山 开发</span>
+            © {new Date().getFullYear()} On Tab · 
+            <span className="text-white font-bold ml-1">{t('footer.developedBy', { name: t('settings.labels.authorName') })}</span>
           </span>
           <div className="w-[1px] h-3 bg-white/10 mx-1" />
           <button 
@@ -793,7 +761,7 @@ function App() {
             }}
             className="text-[11px] text-white/60 hover:text-white transition-colors no-underline font-medium"
           >
-            联系我们
+            {t('common.contact')}
           </button>
           <div className="w-[1px] h-3 bg-white/10 mx-1" />
           <button 
@@ -802,9 +770,9 @@ function App() {
               setIsSettingsOpen(true);
             }}
             className="text-[11px] text-white/60 hover:text-white transition-colors no-underline font-medium"
-          >
-            隐私政策
-          </button>
+        >
+          {t('common.privacy')}
+        </button>
         </div>
       </footer>
 
@@ -814,7 +782,7 @@ function App() {
           <div className="bg-white/80 backdrop-blur-2xl rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200 border border-white/40">
             <div className="p-6 border-b border-white/20 flex items-center justify-between bg-white/20">
               <h3 className="text-xl font-bold text-gray-800">
-                {editingCategory ? '编辑分类' : '新建分类'}
+                {editingCategory ? t('category.editTitle') : t('category.addTitle')}
               </h3>
               <button onClick={() => setIsCategoryModalOpen(false)} className="p-2 hover:bg-black/5 rounded-full transition-colors">
                 <X size={20} className="text-gray-600" />
@@ -823,16 +791,16 @@ function App() {
             
             <div className="p-6 space-y-6">
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">分类名称</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">{t('category.nameLabel')}</label>
                 <input
-                  type="text" autoFocus placeholder="例如：AI 办公、设计素材..."
+                  type="text" autoFocus placeholder={t('category.namePlaceholder')}
                   className="block w-full bg-white/50 border border-white/40 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-gray-800 font-medium"
                   value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSaveCategory()}
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">选择图标</label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">{t('category.iconLabel')}</label>
                 <div className="grid grid-cols-6 gap-2 max-h-48 overflow-y-auto p-1 no-scrollbar">
                   {CATEGORY_ICONS.map((icon) => {
                     const IconComp = icon.icon;
@@ -840,7 +808,7 @@ function App() {
                       <button
                         key={icon.id} onClick={() => setSelectedIconId(icon.id)}
                         className={`p-3 rounded-xl flex items-center justify-center transition-all ${selectedIconId === icon.id ? 'bg-blue-600 text-white shadow-lg scale-110' : 'bg-white/40 text-gray-500 hover:bg-white/60 border border-white/20'}`}
-                        title={icon.label}
+                        title={t('category.icons.' + icon.id)}
                       >
                         <IconComp size={20} />
                       </button>
@@ -851,8 +819,8 @@ function App() {
             </div>
 
             <div className="p-6 bg-white/30 border-t border-white/20 flex gap-3">
-              <button onClick={() => setIsCategoryModalOpen(false)} className="flex-1 px-4 py-3 text-gray-700 font-bold hover:bg-black/5 rounded-xl transition-all">取消</button>
-              <button onClick={handleSaveCategory} className="flex-1 px-4 py-3 bg-blue-600 text-white font-bold hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95">保存</button>
+              <button onClick={() => setIsCategoryModalOpen(false)} className="flex-1 px-4 py-3 text-gray-700 font-bold hover:bg-black/5 rounded-xl transition-all">{t('common.cancel')}</button>
+              <button onClick={handleSaveCategory} className="flex-1 px-4 py-3 bg-blue-600 text-white font-bold hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95">{t('common.save')}</button>
             </div>
           </div>
         </div>
@@ -898,7 +866,7 @@ function App() {
           onWallpaperChange={(url) => {
             setWallpaper(url);
             localStorage.setItem('app-wallpaper', url);
-            showToast('壁纸已更新', 'success');
+            showToast(t('toast.wallpaperUpdated'), 'success');
           }}
         />
       )}

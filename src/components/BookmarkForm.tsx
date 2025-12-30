@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { type Bookmark, type Category } from '../db/db';
 import { bookmarkService } from '../services/bookmarkService';
 import { X, Loader2, Globe, RefreshCw } from 'lucide-react';
@@ -10,6 +11,7 @@ interface BookmarkFormProps {
 }
 
 export const BookmarkForm: React.FC<BookmarkFormProps> = ({ onClose, onSave, initialData }) => {
+  const { t } = useTranslation();
   const [title, setTitle] = useState(initialData?.title || '');
   const [url, setUrl] = useState(initialData?.url || '');
   const [icon, setIcon] = useState(initialData?.icon || '');
@@ -73,19 +75,19 @@ export const BookmarkForm: React.FC<BookmarkFormProps> = ({ onClose, onSave, ini
     <div className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
       <div className="bg-white/80 backdrop-blur-2xl rounded-2xl w-full max-w-md shadow-2xl border border-white/40 overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="flex justify-between items-center p-6 border-b border-white/20 bg-white/20">
-          <h2 className="text-xl font-bold text-gray-800">{initialData ? '编辑书签' : '添加书签'}</h2>
+          <h2 className="text-xl font-bold text-gray-800">{initialData ? t('bookmark.editTitle') : t('bookmark.addTitle')}</h2>
           <button onClick={onClose} className="p-1.5 hover:bg-black/5 rounded-full transition-colors text-gray-500">
             <X size={20} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">URL 地址</label>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">{t('bookmark.urlLabel')}</label>
             <div className="relative group">
               <input
                 type="text"
                 required
-                placeholder="example.com 或 https://..."
+                placeholder={t('bookmark.urlPlaceholder')}
                 className="block w-full bg-white/50 border border-white/40 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-gray-800 font-medium"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
@@ -99,9 +101,9 @@ export const BookmarkForm: React.FC<BookmarkFormProps> = ({ onClose, onSave, ini
                     type="button"
                     onClick={handleUrlBlur}
                     className="px-2 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors"
-                    title="重新获取信息"
+                    title={t('bookmark.reGetInfo')}
                   >
-                    获取信息
+                    {t('bookmark.getInfo')}
                   </button>
                 )}
               </div>
@@ -110,11 +112,11 @@ export const BookmarkForm: React.FC<BookmarkFormProps> = ({ onClose, onSave, ini
 
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">标题名称</label>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">{t('bookmark.titleLabel')}</label>
               <input
                 type="text"
                 required
-                placeholder="书签名称"
+                placeholder={t('bookmark.titlePlaceholder')}
                 className="block w-full bg-white/50 border border-white/40 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-gray-800 font-medium"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -123,7 +125,7 @@ export const BookmarkForm: React.FC<BookmarkFormProps> = ({ onClose, onSave, ini
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">图标预览 & 自定义 (二选一)</label>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">{t('bookmark.iconLabel')}</label>
             <div className="flex items-start gap-4 p-4 bg-white/40 border border-white/40 rounded-2xl transition-all">
               <div className="w-14 h-14 bg-white/60 rounded-xl border border-white/60 flex items-center justify-center shrink-0 shadow-sm overflow-hidden group relative">
                 {icon ? (
@@ -144,7 +146,7 @@ export const BookmarkForm: React.FC<BookmarkFormProps> = ({ onClose, onSave, ini
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="手动输入图标 URL..."
+                    placeholder={t('bookmark.customIconPlaceholder')}
                     className="block w-full bg-white/50 border border-white/40 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-gray-700"
                     value={icon}
                     onChange={(e) => setIcon(e.target.value)}
@@ -158,7 +160,7 @@ export const BookmarkForm: React.FC<BookmarkFormProps> = ({ onClose, onSave, ini
                     className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 text-blue-600 rounded-md text-[10px] font-black hover:bg-blue-100 transition-colors uppercase tracking-tight"
                   >
                     <RefreshCw size={10} className="group-hover:rotate-180 transition-transform duration-500" />
-                    恢复获取到的图标
+                    {t('bookmark.restoreIcon')}
                   </button>
                 )}
               </div>
@@ -167,23 +169,23 @@ export const BookmarkForm: React.FC<BookmarkFormProps> = ({ onClose, onSave, ini
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">分类目录</label>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">{t('bookmark.categoryLabel')}</label>
               <select
                 className="block w-full bg-white/50 border border-white/40 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-gray-800 font-medium appearance-none cursor-pointer"
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
               >
-                <option value="">未分类</option>
+                <option value="">{t('bookmark.uncategorized')}</option>
                 {categories.map(cat => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">标签 (逗号分隔)</label>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">{t('bookmark.tagsLabel')}</label>
               <input
                 type="text"
-                placeholder="工作, 学习, 娱乐"
+                placeholder={t('bookmark.tagsPlaceholder')}
                 className="block w-full bg-white/50 border border-white/40 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-gray-800 font-medium"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
@@ -192,9 +194,9 @@ export const BookmarkForm: React.FC<BookmarkFormProps> = ({ onClose, onSave, ini
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">备注说明 (可选)</label>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">{t('bookmark.notesLabel')}</label>
             <textarea
-              placeholder="添加一些备注..."
+              placeholder={t('bookmark.notesPlaceholder')}
               className="block w-full bg-white/50 border border-white/40 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all text-gray-800 font-medium h-20 resize-none"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -207,13 +209,13 @@ export const BookmarkForm: React.FC<BookmarkFormProps> = ({ onClose, onSave, ini
               onClick={onClose} 
               className="flex-1 px-4 py-3 text-gray-700 font-bold hover:bg-black/5 rounded-xl transition-all"
             >
-              取消
+              {t('common.cancel')}
             </button>
             <button 
               type="submit"
               className="flex-1 px-4 py-3 bg-blue-600 text-white font-bold hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/20 transition-all active:scale-95"
             >
-              {initialData ? '更新书签' : '保存书签'}
+              {initialData ? t('bookmark.update') : t('bookmark.save')}
             </button>
           </div>
         </form>

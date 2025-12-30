@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Edit2, Trash2, Tag, ExternalLink, Copy } from 'lucide-react';
 import { type Bookmark, type Category } from '../db/db';
 
@@ -23,6 +24,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onDelete,
   onChangeCategory,
 }) => {
+  const { t } = useTranslation();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,7 +65,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         className="w-full flex items-center gap-3 px-4 py-2 hover:bg-white/50 transition-colors text-gray-700"
       >
         <ExternalLink size={15} className="text-gray-400" />
-        在新标签页中打开
+        {t('context.openInNewTab')}
       </button>
 
       <button
@@ -71,7 +73,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         className="w-full flex items-center gap-3 px-4 py-2 hover:bg-white/50 transition-colors text-gray-700"
       >
         <Copy size={15} className="text-gray-400" />
-        复制链接地址
+        {t('context.copyLink')}
       </button>
 
       <div className="h-px bg-white/20 my-1" />
@@ -84,14 +86,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         className="w-full flex items-center gap-3 px-4 py-2 hover:bg-white/50 transition-colors text-gray-700"
       >
         <Edit2 size={15} className="text-gray-400" />
-        修改
+        {t('context.edit')}
       </button>
 
       <div className="relative group">
         <button className="w-full flex items-center justify-between px-4 py-2 hover:bg-white/50 transition-colors text-gray-700">
           <div className="flex items-center gap-3">
             <Tag size={15} className="text-gray-400" />
-            移动到分类
+            {t('context.moveToCategory')}
           </div>
           <span className="text-[10px] text-gray-400">▶</span>
         </button>
@@ -104,7 +106,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             }}
             className={`w-full text-left px-4 py-2 hover:bg-white/50 transition-colors ${!bookmark.categoryId ? 'text-blue-600 font-bold bg-blue-50/30' : 'text-gray-600'}`}
           >
-            未分类
+            {t('context.uncategorized')}
           </button>
           <div className="h-px bg-white/20 my-1" />
           <div className="max-h-60 overflow-y-auto no-scrollbar">
@@ -134,7 +136,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
         className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50/50 hover:text-red-500 transition-colors text-gray-700"
       >
         <Trash2 size={15} />
-        删除
+        {t('context.delete')}
       </button>
     </div>
   );

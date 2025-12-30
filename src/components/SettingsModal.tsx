@@ -59,12 +59,12 @@ interface SettingsModalProps {
 }
 
 const AVATAR_STYLES = [
-  { id: 'avataaars', label: '人物' },
-  { id: 'bottts', label: '机器人' },
-  { id: 'adventurer', label: '冒险者' },
-  { id: 'fun-emoji', label: '表情' },
-  { id: 'lorelei', label: '手绘' },
-  { id: 'pixel-art', label: '像素' },
+  { id: 'avataaars', label: 'avatarPerson' },
+  { id: 'bottts', label: 'avatarRobot' },
+  { id: 'adventurer', label: 'avatarAdventurer' },
+  { id: 'fun-emoji', label: 'avatarEmoji' },
+  { id: 'lorelei', label: 'avatarLorelei' },
+  { id: 'pixel-art', label: 'avatarPixel' },
 ];
 
 const SortableCategoryItem = ({ cat, onDelete }: { cat: any, onDelete: (id: string) => void }) => {
@@ -105,7 +105,7 @@ const SortableCategoryItem = ({ cat, onDelete }: { cat: any, onDelete: (id: stri
       <button 
         onClick={() => onDelete(cat.id)}
         className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-        title="删除分类"
+        title={t('common.delete')}
       >
         <Trash2 size={18} />
       </button>
@@ -148,7 +148,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        alert('图片大小不能超过 5MB');
+        alert(t('settings.labels.maxSizeInfo'));
         return;
       }
       const reader = new FileReader();
@@ -218,8 +218,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
   const handleDeleteCategory = async (id: string) => {
     setConfirmConfig({
       isOpen: true,
-      title: '红色警告',
-      message: '确定要删除此分类吗？删除后，该分类下的书签将变为“未分类”，此操作不可撤销。',
+      title: t('common.warning'),
+      message: t('category.deleteWarning'),
       onConfirm: async () => {
         await bookmarkService.deleteCategory(id);
         loadCategories();
@@ -230,9 +230,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
   const handleBrowserImport = async () => {
     try {
       const count = await migrationService.importFromBrowser();
-      alert(`成功导入 ${count} 个书签`);
+      alert(t('toast.syncSuccess', { count }));
     } catch (err: any) {
-      alert('导入失败: ' + err.message);
+      alert(t('common.error') + ': ' + err.message);
     }
   };
 
@@ -249,10 +249,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
     if (file) {
       try {
         const count = await migrationService.importFromJSON(file);
-        alert(`成功导入 ${count} 个书签`);
+        alert(t('toast.syncSuccess', { count }));
         onClose();
       } catch (err: any) {
-        alert('导入失败: ' + err.message);
+        alert(t('common.error') + ': ' + err.message);
       }
     }
   };
@@ -262,22 +262,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
     if (file) {
       try {
         const count = await migrationService.importFromHTML(file);
-        alert(`成功从 HTML 导入 ${count} 个书签`);
+        alert(t('toast.syncSuccess', { count }));
         onClose();
       } catch (err: any) {
-        alert('导入失败: ' + err.message);
+        alert(t('common.error') + ': ' + err.message);
       }
     }
   };
 
   const tabs = [
-    { id: 'categories', label: '分类管理', icon: Tag },
-    { id: 'appearance', label: '外观设置', icon: Palette },
-    { id: 'migration', label: '数据迁移', icon: Database },
-    { id: 'business', label: '商务合作', icon: Handshake },
-    { id: 'contact', label: '联系我们', icon: Mail },
-    { id: 'feedback', label: '问题反馈', icon: MessageSquare },
-    { id: 'about', label: '关于应用', icon: Info },
+    { id: 'categories', label: t('settings.tabs.categories'), icon: Tag },
+    { id: 'appearance', label: t('settings.tabs.appearance'), icon: Palette },
+    { id: 'migration', label: t('settings.tabs.migration'), icon: Database },
+    { id: 'business', label: t('settings.tabs.business'), icon: Handshake },
+    { id: 'contact', label: t('settings.tabs.contact'), icon: Mail },
+    { id: 'feedback', label: t('settings.tabs.feedback'), icon: MessageSquare },
+    { id: 'about', label: t('settings.tabs.about'), icon: Info },
   ] as const;
 
   return (
@@ -316,7 +316,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
           <div className="mt-auto pt-6 border-t border-white/20 px-2">
             <div className="flex items-center gap-2 text-gray-400 text-xs font-bold uppercase tracking-widest">
               <ShieldCheck size={14} />
-              数据安全保障
+              {t('settings.sections.security')}
             </div>
           </div>
         </div>
@@ -341,7 +341,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider leading-tight">已登录账户</div>
+                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider leading-tight">{t('settings.labels.loggedAs')}</div>
                     <div className="text-sm font-bold text-gray-700 truncate">{user.email}</div>
                   </div>
                 </>
@@ -351,8 +351,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                     <User size={18} />
                   </div>
                   <div>
-                    <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">未登录</div>
-                    <div className="text-sm font-bold text-gray-500">登录后同步数据</div>
+                    <div className="text-xs text-gray-400 font-bold uppercase tracking-wider">{t('settings.labels.notLogged')}</div>
+                    <div className="text-sm font-bold text-gray-500">{t('settings.labels.syncToCloud')}</div>
                   </div>
                 </>
               )}
@@ -364,14 +364,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                 className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-red-500 hover:bg-red-50/50 rounded-lg transition-all"
               >
                 <LogOut size={14} />
-                退出登录
+                {t('common.logout')}
               </button>
             ) : (
               <button 
                 onClick={onAuthOpen}
                 className="px-4 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-all shadow-md shadow-blue-100"
               >
-                立即登录
+                {t('common.login')}
               </button>
             )}
           </div>
@@ -386,15 +386,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
           <div className="flex-1 overflow-y-auto p-8 no-scrollbar">
             {activeTab === 'categories' && (
               <div className="animate-in slide-in-from-right-4 duration-300">
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">分类管理</h3>
-                <p className="text-gray-500 text-sm mb-8">管理您的书签分类，让导航更有序。</p>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">{t('settings.tabs.categories')}</h3>
+                <p className="text-gray-500 text-sm mb-8">{t('category.description')}</p>
 
                 <div className="flex gap-3 mb-8">
                   <input 
                     type="text" 
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    placeholder="输入新分类名称..."
+                    placeholder={t('settings.labels.newCategoryPlaceholder')}
                     className="flex-1 px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm font-medium"
                     onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
                   />
@@ -403,7 +403,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                     className="px-6 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center gap-2 active:scale-95"
                   >
                     <FolderPlus size={18} />
-                    添加
+                    {t('common.add')}
                   </button>
                 </div>
 
@@ -431,7 +431,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                       <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
                         <Tag size={32} />
                       </div>
-                      <p className="text-gray-400 font-medium">暂无分类，快去添加一个吧</p>
+                      <p className="text-gray-400 font-medium">{t('category.none')}</p>
                     </div>
                   )}
                 </div>
@@ -443,7 +443,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                 <section>
                   <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                     <User size={20} className="text-blue-500" />
-                    个性头像
+                    {t('settings.sections.avatar')}
                   </h3>
                   <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
                     <div className="flex flex-col items-center gap-6">
@@ -462,7 +462,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                             handleAvatarChange(avatarStyle, newSeed);
                           }}
                           className="absolute -right-2 -bottom-2 p-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 active:scale-95"
-                          title="随机生成"
+                          title={t('settings.labels.randomGenerate')}
                         >
                           <RefreshCw size={16} />
                         </button>
@@ -483,12 +483,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                                   : 'bg-white text-gray-600 border-gray-100 hover:border-blue-200 hover:bg-blue-50/50'
                               }`}
                             >
-                              {style.label}
+                              {t(`settings.labels.${style.label}`)}
                             </button>
                           ))}
                         </div>
                         <p className="text-center text-[10px] text-gray-400 font-medium">
-                          基于 DiceBear 开源头像库生成
+                          {t('settings.labels.diceBearInfo')}
                         </p>
                       </div>
                     </div>
@@ -498,7 +498,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                 <section>
                   <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                     <ImageIcon size={20} className="text-blue-500" />
-                    壁纸设置
+                    {t('settings.sections.wallpaper')}
                   </h3>
                   <div className="space-y-4">
                     <div className="relative aspect-video rounded-2xl overflow-hidden group shadow-lg border border-gray-100">
@@ -509,12 +509,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                           className="px-6 py-2.5 bg-white text-gray-900 rounded-xl font-bold text-sm shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
                         >
                           <Upload size={18} />
-                          更换壁纸
+                          {t('settings.labels.changeWallpaper')}
                         </button>
                       </div>
                     </div>
                     <input type="file" ref={wallpaperFileRef} onChange={handleWallpaperUpload} accept="image/*" className="hidden" />
-                    <p className="text-xs text-gray-400 font-medium px-2">建议分辨率：1920x1080，支持 JPG、PNG、WebP 格式。</p>
+                    <p className="text-xs text-gray-400 font-medium px-2">{t('settings.labels.wallpaperResolution')}</p>
                   </div>
                 </section>
               </div>
@@ -527,8 +527,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                     <Database size={24} />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-800">数据迁移</h3>
-                    <p className="text-sm text-gray-500">备份、导出或从浏览器导入您的书签数据</p>
+                    <h3 className="text-xl font-bold text-gray-800">{t('settings.tabs.migration')}</h3>
+                    <p className="text-sm text-gray-500">{t('settings.labels.migrationDesc')}</p>
                   </div>
                 </div>
 
@@ -539,13 +539,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                         <Download size={20} />
                       </div>
                     </div>
-                    <h4 className="font-bold text-gray-800 mb-1">导出 JSON</h4>
-                    <p className="text-xs text-gray-500 mb-4">将所有书签导出为标准 JSON 文件</p>
+                    <h4 className="font-bold text-gray-800 mb-1">{t('settings.labels.exportJSON')}</h4>
+                    <p className="text-xs text-gray-500 mb-4">{t('settings.labels.exportJSONDesc')}</p>
                     <button 
                       onClick={handleExportJSON}
                       className="w-full py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all"
                     >
-                      立即导出
+                      {t('common.export')}
                     </button>
                   </div>
 
@@ -555,13 +555,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                         <Upload size={20} />
                       </div>
                     </div>
-                    <h4 className="font-bold text-gray-800 mb-1">导入 JSON</h4>
-                    <p className="text-xs text-gray-500 mb-4">从备份的 JSON 文件中恢复书签</p>
+                    <h4 className="font-bold text-gray-800 mb-1">{t('settings.labels.importJSON')}</h4>
+                    <p className="text-xs text-gray-500 mb-4">{t('settings.labels.importJSONDesc')}</p>
                     <button 
                       onClick={() => fileInputRef.current?.click()}
                       className="w-full py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-green-600 hover:text-white hover:border-green-600 transition-all"
                     >
-                      选择文件
+                      {t('common.import')}
                     </button>
                     <input
                       type="file"
@@ -578,8 +578,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                         <Import size={20} />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-bold text-gray-800">从浏览器导入</h4>
-                        <p className="text-xs text-gray-500">一键同步或上传 HTML 书签文件</p>
+                        <h4 className="font-bold text-gray-800">{t('settings.sections.browserImport')}</h4>
+                        <p className="text-xs text-gray-500">{t('settings.labels.browserImportDesc')}</p>
                       </div>
                     </div>
                     <div className="flex gap-3">
@@ -587,13 +587,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                         onClick={handleBrowserImport}
                         className="flex-1 py-3 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-all"
                       >
-                        自动扫描导入
+                        {t('settings.labels.autoScan')}
                       </button>
                       <button 
                         onClick={() => htmlInputRef.current?.click()}
                         className="flex-1 py-3 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all"
                       >
-                        上传 HTML 文件
+                        {t('settings.labels.uploadHTML')}
                       </button>
                     </div>
                     <input
@@ -604,7 +604,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                       onChange={handleHTMLImport}
                     />
                     <p className="mt-3 text-[10px] text-gray-400 leading-relaxed">
-                      * 提示：如果“自动扫描”不可用，请在浏览器书签管理器中将书签“导出为 HTML 文件”，然后点击上方按钮上传。
+                      {t('settings.labels.importTip')}
                     </p>
                   </div>
                 </div>
@@ -618,23 +618,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                     <Handshake size={24} />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-800">商务合作</h3>
-                    <p className="text-sm text-gray-500">资源互换、技术合作或商务推广</p>
+                    <h3 className="text-xl font-bold text-gray-800">{t('settings.tabs.business')}</h3>
+                    <p className="text-sm text-gray-500">{t('settings.labels.businessDesc')}</p>
                   </div>
                 </div>
 
                 <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100">
                   <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-                    如果您有商务推广、资源互换或技术合作意向，欢迎随时联系我们的团队：
+                    {t('settings.labels.businessContactDesc')}
                   </p>
                   <div className="p-4 bg-white rounded-xl border border-gray-100 space-y-4">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">合作邮箱</span>
+                      <span className="text-gray-500">{t('settings.labels.partnerEmail')}</span>
                       <span className="font-bold text-gray-800 select-all">blacklaw@foxmail.com</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">响应时间</span>
-                      <span className="font-bold text-gray-800">1-3 个工作日</span>
+                      <span className="text-gray-500">{t('settings.labels.responseTime')}</span>
+                      <span className="font-bold text-gray-800">{t('settings.labels.businessDays')}</span>
                     </div>
                   </div>
                 </div>
@@ -648,8 +648,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                     <Mail size={24} />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-800">联系我们</h3>
-                    <p className="text-sm text-gray-500">获取官方支持或加入我们的社区</p>
+                    <h3 className="text-xl font-bold text-gray-800">{t('settings.tabs.contact')}</h3>
+                    <p className="text-sm text-gray-500">{t('settings.labels.contactDesc')}</p>
                   </div>
                 </div>
 
@@ -661,8 +661,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                           <MessageSquare size={20} />
                         </div>
                         <div>
-                          <p className="font-bold text-gray-800 mb-1">微信客服</p>
-                          <p className="text-sm text-gray-500">搜索 ID: <span className="text-gray-800 font-medium select-all">BEISHAN5678</span></p>
+                          <p className="font-bold text-gray-800 mb-1">{t('settings.labels.wechatCustomer')}</p>
+                          <p className="text-sm text-gray-500">{t('settings.labels.searchId')}: <span className="text-gray-800 font-medium select-all">BEISHAN5678</span></p>
                         </div>
                       </div>
                       <div className="flex items-start gap-4">
@@ -670,7 +670,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                           <Mail size={20} />
                         </div>
                         <div>
-                          <p className="font-bold text-gray-800 mb-1">客服邮箱</p>
+                          <p className="font-bold text-gray-800 mb-1">{t('settings.labels.customerEmail')}</p>
                           <p className="text-sm text-gray-500 select-all font-medium text-gray-800">blacklaw@foxmail.com</p>
                         </div>
                       </div>
@@ -679,8 +679,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                           <User size={20} />
                         </div>
                         <div>
-                          <p className="font-bold text-gray-800 mb-1">作者</p>
-                          <p className="text-sm text-gray-500 leading-relaxed">北山</p>
+                          <p className="font-bold text-gray-800 mb-1">{t('settings.labels.author')}</p>
+                          <p className="text-sm text-gray-500 leading-relaxed">{t('settings.labels.authorName')}</p>
                         </div>
                       </div>
                     </div>
@@ -696,23 +696,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                     <MessageSquare size={24} />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-800">问题反馈</h3>
-                    <p className="text-sm text-gray-500">提交 Bug 或是功能建议</p>
+                    <h3 className="text-xl font-bold text-gray-800">{t('settings.tabs.feedback')}</h3>
+                    <p className="text-sm text-gray-500">{t('settings.labels.feedbackDesc')}</p>
                   </div>
                 </div>
 
                 <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100">
                   <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-                    遇到 Bug 或是想要新功能？我们非常重视每一位用户的建议。请通过以下方式告诉我们：
+                    {t('settings.labels.feedbackContent')}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <a href="mailto:blacklaw@foxmail.com" className="flex items-center justify-center gap-3 p-4 bg-white border border-gray-100 rounded-xl text-sm font-bold text-gray-700 hover:border-orange-200 hover:bg-orange-50 transition-all group">
                       <Mail size={18} className="text-orange-500 group-hover:scale-110 transition-transform" />
-                      发送邮件
+                      {t('settings.labels.sendEmail')}
                     </a>
                     <a href="https://github.com/your-repo/issues" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-3 p-4 bg-white border border-gray-100 rounded-xl text-sm font-bold text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-all group">
                       <ExternalLink size={18} className="text-gray-800 group-hover:scale-110 transition-transform" />
-                      GitHub Issue
+                      {t('settings.labels.githubIssue')}
                     </a>
                   </div>
                 </div>
@@ -721,8 +721,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
 
             {activeTab === 'about' && (
               <div className="animate-in slide-in-from-right-4 duration-300">
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">关于与隐私</h3>
-                <p className="text-gray-500 text-sm mb-8">了解更多关于 On Tab 的信息及您的隐私保护。</p>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">{t('settings.labels.aboutTitle')}</h3>
+                <p className="text-gray-500 text-sm mb-8">{t('settings.labels.aboutDesc')}</p>
 
                 <div className="space-y-6">
                   <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 text-center">
@@ -730,26 +730,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                       <img src="/ontab-logo-1.svg" alt="On Tab Logo" className="w-14 h-14 object-contain" />
                     </div>
                     <h4 className="text-xl font-black text-gray-800 mb-2">On Tab</h4>
-                    <p className="text-blue-600 font-bold text-sm mb-6">Version 1.0.0</p>
+                    <p className="text-blue-600 font-bold text-sm mb-6">{t('settings.labels.version')} 1.0.0</p>
                     
                     <div className="space-y-4 text-left max-w-sm mx-auto">
                       <div className="flex items-start gap-3">
                         <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
                           <ShieldCheck size={12} className="text-white" />
                         </div>
-                        <p className="text-sm text-gray-600 leading-relaxed">支持 IndexedDB 本地存储，您的数据优先保存在本地。</p>
+                        <p className="text-sm text-gray-600 leading-relaxed">{t('settings.labels.localStoreDesc')}</p>
                       </div>
                       <div className="flex items-start gap-3">
                         <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
                           <Database size={12} className="text-white" />
                         </div>
-                        <p className="text-sm text-gray-600 leading-relaxed">集成云端备份，跨设备无缝访问书签。</p>
+                        <p className="text-sm text-gray-600 leading-relaxed">{t('settings.labels.cloudBackupDesc')}</p>
                       </div>
                     </div>
 
                     <div className="mt-8 pt-6 border-t border-gray-200 flex flex-col items-center gap-4">
                       <p className="text-xs text-gray-400 font-medium italic">
-                        “ 让书签管理变得简单、高效、优雅 ”
+                        {t('settings.labels.slogan')}
                       </p>
                       <a 
                         href="/privacy.html" 
@@ -757,7 +757,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                         rel="noopener noreferrer"
                         className="text-xs text-blue-500 hover:text-blue-600 font-bold flex items-center gap-1 transition-colors"
                       >
-                        查看详细隐私政策
+                        {t('settings.labels.privacyLink')}
                         <ExternalLink size={12} />
                       </a>
                     </div>
@@ -766,13 +766,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
                   <div className="p-6 bg-white border border-gray-100 rounded-2xl space-y-4">
                     <h5 className="font-bold text-gray-800 flex items-center gap-2">
                       <ShieldCheck size={18} className="text-green-500" />
-                      隐私政策概要
+                      {t('settings.labels.privacyPolicySummary')}
                     </h5>
                     <div className="space-y-3 text-sm text-gray-600 leading-relaxed">
-                      <p>1. <strong>数据所有权</strong>：您的书签数据归您所有。默认情况下，所有数据均存储在您的本地浏览器中。</p>
-                      <p>2. <strong>云端同步</strong>：当您选择登录并启用同步功能时，数据将加密传输并存储在安全的云服务器中，仅用于多设备间的数据同步。</p>
-                      <p>3. <strong>隐私保护</strong>：我们不会向任何第三方出售、交易或转让您的个人信息。您的账号信息仅用于身份验证。</p>
-                      <p>4. <strong>透明性</strong>：本应用不包含任何第三方广告或跟踪脚本。我们仅在必要时收集匿名崩溃报告以改进应用稳定性。</p>
+                      <p>1. <strong>{t('settings.labels.privacyPolicy1Title')}</strong>：{t('settings.labels.privacyPolicy1Desc')}</p>
+                      <p>2. <strong>{t('settings.labels.privacyPolicy2Title')}</strong>：{t('settings.labels.privacyPolicy2Desc')}</p>
+                      <p>3. <strong>{t('settings.labels.privacyPolicy3Title')}</strong>：{t('settings.labels.privacyPolicy3Desc')}</p>
+                      <p>4. <strong>{t('settings.labels.privacyPolicy4Title')}</strong>：{t('settings.labels.privacyPolicy4Desc')}</p>
                     </div>
                   </div>
                 </div>
