@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   User as UserIcon,
@@ -41,9 +41,30 @@ export const Sidebar = memo(function Sidebar({
   getCategoryIcon,
 }: SidebarProps) {
   const { t, i18n } = useTranslation();
+  const [isHovered, setIsHovered] = useState(false);
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleMouseEnter = useCallback(() => {
+    hoverTimerRef.current = setTimeout(() => setIsHovered(true), 200);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    setIsHovered(false);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    };
+  }, []);
 
   return (
-    <div className="fixed left-6 top-1/2 -translate-y-1/2 w-16 max-h-[calc(100vh-48px)] bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl py-6 flex flex-col items-center z-40 group hover:w-48 transition-all duration-300 overflow-hidden shadow-2xl opacity-60 hover:opacity-100">
+    <div
+      className={`fixed left-6 top-1/2 -translate-y-1/2 max-h-[calc(100vh-48px)] bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl py-6 flex flex-col items-center z-40 overflow-hidden shadow-2xl transition-all duration-300 ease-out opacity-60 hover:opacity-100 ${isHovered ? 'w-48 opacity-100' : 'w-16'}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <div
         onClick={() => !user ? onAuthOpen() : onSettingsOpen()}
         className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-6 cursor-pointer hover:bg-white/30 transition-colors shrink-0 overflow-hidden ring-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
@@ -65,7 +86,7 @@ export const Sidebar = memo(function Sidebar({
           <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
             <Grid3X3 size={20} />
           </div>
-          <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
+          <span className={`whitespace-nowrap font-medium text-sm transition-opacity duration-300 ml-1 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
             {t('nav.allBookmarks')}
           </span>
         </button>
@@ -86,7 +107,7 @@ export const Sidebar = memo(function Sidebar({
               <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
                 {getCategoryIcon(cat.icon)}
               </div>
-              <span className="whitespace-nowrap font-medium text-sm truncate opacity-0 group-hover:opacity-100 transition-all duration-300 flex-1 text-left ml-1">
+              <span className={`whitespace-nowrap font-medium text-sm truncate transition-opacity duration-300 flex-1 text-left ml-1 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
                 {cat.name}
               </span>
             </button>
@@ -103,7 +124,7 @@ export const Sidebar = memo(function Sidebar({
         <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
           <PlusCircle size={20} />
         </div>
-        <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
+        <span className={`whitespace-nowrap font-medium text-sm transition-opacity duration-300 ml-1 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
           {t('nav.addCategory')}
         </span>
       </button>
@@ -118,9 +139,9 @@ export const Sidebar = memo(function Sidebar({
           title={t('nav.switchLang')}
         >
           <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-            <Languages size={20} className="group-hover/nav:scale-110 transition-transform" />
+            <Languages size={20} className={`transition-transform duration-300 ${isHovered ? 'scale-110' : ''}`} />
           </div>
-          <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
+          <span className={`whitespace-nowrap font-medium text-sm transition-opacity duration-300 ml-1 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
             {t('nav.switchLangName')}
           </span>
         </button>
@@ -132,9 +153,9 @@ export const Sidebar = memo(function Sidebar({
           title={t('nav.syncNow')}
         >
           <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-            <Cloud size={20} className={`${syncing ? 'animate-spin' : 'group-hover/nav:scale-110'} transition-transform`} />
+            <Cloud size={20} className={`transition-transform duration-300 ${syncing ? 'animate-spin' : isHovered ? 'scale-110' : ''}`} />
           </div>
-          <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
+          <span className={`whitespace-nowrap font-medium text-sm transition-opacity duration-300 ml-1 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
             {t('nav.syncNow')}
           </span>
         </button>
@@ -145,9 +166,9 @@ export const Sidebar = memo(function Sidebar({
           title={t('nav.settings')}
         >
           <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-            <Settings size={20} className="group-hover/nav:rotate-90 transition-transform duration-500" />
+            <Settings size={20} className={`transition-transform duration-500 ${isHovered ? 'rotate-90' : ''}`} />
           </div>
-          <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
+          <span className={`whitespace-nowrap font-medium text-sm transition-opacity duration-300 ml-1 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
             {t('nav.settings')}
           </span>
         </button>

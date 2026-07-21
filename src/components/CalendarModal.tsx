@@ -1,12 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-
-interface Holiday {
-  date: string;
-  name: string;
-  isWorkingDay?: boolean;
-}
+import { getHolidaysData, type HolidayResolved } from '../data/holidays';
 
 interface CalendarModalProps {
   isOpen: boolean;
@@ -17,134 +12,15 @@ interface CalendarModalProps {
 export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, initialDate = new Date() }) => {
   const { t, i18n } = useTranslation();
   const [viewDate, setViewDate] = useState(new Date(initialDate.getFullYear(), initialDate.getMonth(), 1));
-  const today = new Date();
+
+  // 中国法定节假日数据（从常量文件加载并通过 i18n 解析）
+  const holidaysData = useMemo(() => getHolidaysData(t), [t]);
 
   if (!isOpen) return null;
 
+  const today = new Date();
   const monthNames = t('calendar.months', { returnObjects: true }) as string[];
   const dayNames = t('calendar.days', { returnObjects: true }) as string[];
-
-  // 预设 2024-2025 中国法定节假日数据
-  const HOLIDAYS_DATA: Record<string, Holiday> = {
-    // 2024
-    "2024-01-01": { date: "2024-01-01", name: t('calendar.holidays.newYear') },
-    "2024-02-10": { date: "2024-02-10", name: t('calendar.holidays.springFestival') },
-    "2024-02-11": { date: "2024-02-11", name: t('calendar.holidays.springFestival') },
-    "2024-02-12": { date: "2024-02-12", name: t('calendar.holidays.springFestival') },
-    "2024-02-13": { date: "2024-02-13", name: t('calendar.holidays.springFestival') },
-    "2024-02-14": { date: "2024-02-14", name: t('calendar.holidays.springFestival') },
-    "2024-02-15": { date: "2024-02-15", name: t('calendar.holidays.springFestival') },
-    "2024-02-16": { date: "2024-02-16", name: t('calendar.holidays.springFestival') },
-    "2024-02-17": { date: "2024-02-17", name: t('calendar.holidays.springFestival') },
-    "2024-02-04": { date: "2024-02-04", name: t('calendar.work'), isWorkingDay: true },
-    "2024-02-18": { date: "2024-02-18", name: t('calendar.work'), isWorkingDay: true },
-    "2024-04-04": { date: "2024-04-04", name: t('calendar.holidays.qingming') },
-    "2024-04-05": { date: "2024-04-05", name: t('calendar.holidays.qingming') },
-    "2024-04-06": { date: "2024-04-06", name: t('calendar.holidays.qingming') },
-    "2024-04-07": { date: "2024-04-07", name: t('calendar.work'), isWorkingDay: true },
-    "2024-05-01": { date: "2024-05-01", name: t('calendar.holidays.laborDay') },
-    "2024-05-02": { date: "2024-05-02", name: t('calendar.holidays.laborDay') },
-    "2024-05-03": { date: "2024-05-03", name: t('calendar.holidays.laborDay') },
-    "2024-05-04": { date: "2024-05-04", name: t('calendar.holidays.laborDay') },
-    "2024-05-05": { date: "2024-05-05", name: t('calendar.holidays.laborDay') },
-    "2024-04-28": { date: "2024-04-28", name: t('calendar.work'), isWorkingDay: true },
-    "2024-05-11": { date: "2024-05-11", name: t('calendar.work'), isWorkingDay: true },
-    "2024-06-10": { date: "2024-06-10", name: t('calendar.holidays.dragonBoat') },
-    "2024-09-15": { date: "2024-09-15", name: t('calendar.holidays.midAutumn') },
-    "2024-09-16": { date: "2024-09-16", name: t('calendar.holidays.midAutumn') },
-    "2024-09-17": { date: "2024-09-17", name: t('calendar.holidays.midAutumn') },
-    "2024-09-14": { date: "2024-09-14", name: t('calendar.work'), isWorkingDay: true },
-    "2024-10-01": { date: "2024-10-01", name: t('calendar.holidays.nationalDay') },
-    "2024-10-02": { date: "2024-10-02", name: t('calendar.holidays.nationalDay') },
-    "2024-10-03": { date: "2024-10-03", name: t('calendar.holidays.nationalDay') },
-    "2024-10-04": { date: "2024-10-04", name: t('calendar.holidays.nationalDay') },
-    "2024-10-05": { date: "2024-10-05", name: t('calendar.holidays.nationalDay') },
-    "2024-10-06": { date: "2024-10-06", name: t('calendar.holidays.nationalDay') },
-    "2024-10-07": { date: "2024-10-07", name: t('calendar.holidays.nationalDay') },
-    "2024-09-29": { date: "2024-09-29", name: t('calendar.work'), isWorkingDay: true },
-    "2024-10-12": { date: "2024-10-12", name: t('calendar.work'), isWorkingDay: true },
-
-    // 2025
-    "2025-01-01": { date: "2025-01-01", name: t('calendar.holidays.newYear') },
-    "2025-01-28": { date: "2025-01-28", name: t('calendar.holidays.eve') },
-    "2025-01-29": { date: "2025-01-29", name: t('calendar.holidays.springFestival') },
-    "2025-01-30": { date: "2025-01-30", name: t('calendar.holidays.springFestival') },
-    "2025-01-31": { date: "2025-01-31", name: t('calendar.holidays.springFestival') },
-    "2025-02-01": { date: "2025-02-01", name: t('calendar.holidays.springFestival') },
-    "2025-02-02": { date: "2025-02-02", name: t('calendar.holidays.springFestival') },
-    "2025-02-03": { date: "2025-02-03", name: t('calendar.holidays.springFestival') },
-    "2025-02-04": { date: "2025-02-04", name: t('calendar.holidays.springFestival') },
-    "2025-01-26": { date: "2025-01-26", name: t('calendar.work'), isWorkingDay: true },
-    "2025-02-08": { date: "2025-02-08", name: t('calendar.work'), isWorkingDay: true },
-    "2025-04-04": { date: "2025-04-04", name: t('calendar.holidays.qingming') },
-    "2025-04-05": { date: "2025-04-05", name: t('calendar.holidays.qingming') },
-    "2025-04-06": { date: "2025-04-06", name: t('calendar.holidays.qingming') },
-    "2025-05-01": { date: "2025-05-01", name: t('calendar.holidays.laborDay') },
-    "2025-05-02": { date: "2025-05-02", name: t('calendar.holidays.laborDay') },
-    "2025-05-03": { date: "2025-05-03", name: t('calendar.holidays.laborDay') },
-    "2025-05-04": { date: "2025-05-04", name: t('calendar.holidays.laborDay') },
-    "2025-05-05": { date: "2025-05-05", name: t('calendar.holidays.laborDay') },
-    "2025-04-27": { date: "2025-04-27", name: t('calendar.work'), isWorkingDay: true },
-    "2025-05-10": { date: "2025-05-10", name: t('calendar.work'), isWorkingDay: true },
-    "2025-05-31": { date: "2025-05-31", name: t('calendar.holidays.dragonBoat') },
-    "2025-06-01": { date: "2025-06-01", name: t('calendar.holidays.dragonBoat') },
-    "2025-06-02": { date: "2025-06-02", name: t('calendar.holidays.dragonBoat') },
-    "2025-10-01": { date: "2025-10-01", name: t('calendar.holidays.nationalDay') },
-    "2025-10-02": { date: "2025-10-02", name: t('calendar.holidays.nationalDay') },
-    "2025-10-03": { date: "2025-10-03", name: t('calendar.holidays.nationalDay') },
-    "2025-10-04": { date: "2025-10-04", name: t('calendar.holidays.nationalDay') },
-    "2025-10-05": { date: "2025-10-05", name: t('calendar.holidays.nationalDay') },
-    "2025-10-06": { date: "2025-10-06", name: t('calendar.holidays.midAutumn') },
-    "2025-10-07": { date: "2025-10-07", name: t('calendar.holidays.midAutumn') },
-    "2025-10-08": { date: "2025-10-08", name: t('calendar.holidays.midAutumn') },
-    "2025-09-28": { date: "2025-09-28", name: t('calendar.work'), isWorkingDay: true },
-    "2025-10-11": { date: "2025-10-11", name: t('calendar.work'), isWorkingDay: true },
-
-    // 2025 年末补充
-    "2025-12-21": { date: "2025-12-21", name: t('calendar.holidays.winterSolstice') },
-    "2025-12-31": { date: "2025-12-31", name: t('calendar.holidays.newYearEve') },
-
-    // 2026
-    "2026-01-01": { date: "2026-01-01", name: t('calendar.holidays.newYear') },
-    "2026-01-02": { date: "2026-01-02", name: t('calendar.holidays.newYear') },
-    "2026-01-03": { date: "2026-01-03", name: t('calendar.holidays.newYear') },
-    "2026-01-04": { date: "2026-01-04", name: t('calendar.work'), isWorkingDay: true },
-    "2026-02-15": { date: "2026-02-15", name: t('calendar.holidays.springFestival') },
-    "2026-02-16": { date: "2026-02-16", name: t('calendar.holidays.springFestival') },
-    "2026-02-17": { date: "2026-02-17", name: t('calendar.holidays.springFestival') },
-    "2026-02-18": { date: "2026-02-18", name: t('calendar.holidays.springFestival') },
-    "2026-02-19": { date: "2026-02-19", name: t('calendar.holidays.springFestival') },
-    "2026-02-20": { date: "2026-02-20", name: t('calendar.holidays.springFestival') },
-    "2026-02-21": { date: "2026-02-21", name: t('calendar.holidays.springFestival') },
-    "2026-02-22": { date: "2026-02-22", name: t('calendar.holidays.springFestival') },
-    "2026-02-23": { date: "2026-02-23", name: t('calendar.holidays.springFestival') },
-    "2026-02-14": { date: "2026-02-14", name: t('calendar.work'), isWorkingDay: true },
-    "2026-02-28": { date: "2026-02-28", name: t('calendar.work'), isWorkingDay: true },
-    "2026-04-04": { date: "2026-04-04", name: t('calendar.holidays.qingming') },
-    "2026-04-05": { date: "2026-04-05", name: t('calendar.holidays.qingming') },
-    "2026-04-06": { date: "2026-04-06", name: t('calendar.holidays.qingming') },
-    "2026-05-01": { date: "2026-05-01", name: t('calendar.holidays.laborDay') },
-    "2026-05-02": { date: "2026-05-02", name: t('calendar.holidays.laborDay') },
-    "2026-05-03": { date: "2026-05-03", name: t('calendar.holidays.laborDay') },
-    "2026-05-04": { date: "2026-05-04", name: t('calendar.holidays.laborDay') },
-    "2026-05-05": { date: "2026-05-05", name: t('calendar.holidays.laborDay') },
-    "2026-05-09": { date: "2026-05-09", name: t('calendar.work'), isWorkingDay: true },
-    "2026-06-19": { date: "2026-06-19", name: t('calendar.holidays.dragonBoat') },
-    "2026-06-20": { date: "2026-06-20", name: t('calendar.holidays.dragonBoat') },
-    "2026-06-21": { date: "2026-06-21", name: t('calendar.holidays.dragonBoat') },
-    "2026-09-25": { date: "2026-09-25", name: t('calendar.holidays.midAutumn') },
-    "2026-09-26": { date: "2026-09-26", name: t('calendar.holidays.midAutumn') },
-    "2026-09-27": { date: "2026-09-27", name: t('calendar.holidays.midAutumn') },
-    "2026-10-01": { date: "2026-10-01", name: t('calendar.holidays.nationalDay') },
-    "2026-10-02": { date: "2026-10-02", name: t('calendar.holidays.nationalDay') },
-    "2026-10-03": { date: "2026-10-03", name: t('calendar.holidays.nationalDay') },
-    "2026-10-04": { date: "2026-10-04", name: t('calendar.holidays.nationalDay') },
-    "2026-10-05": { date: "2026-10-05", name: t('calendar.holidays.nationalDay') },
-    "2026-10-06": { date: "2026-10-06", name: t('calendar.holidays.nationalDay') },
-    "2026-10-07": { date: "2026-10-07", name: t('calendar.holidays.nationalDay') },
-    "2026-09-20": { date: "2026-09-20", name: t('calendar.work'), isWorkingDay: true },
-    "2026-10-10": { date: "2026-10-10", name: t('calendar.work'), isWorkingDay: true },
-  };
 
   const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
   const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
@@ -177,7 +53,7 @@ export const CalendarModal: React.FC<CalendarModalProps> = ({ isOpen, onClose, i
                       today.getFullYear() === viewDate.getFullYear();
       
       const dateStr = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      const holiday = HOLIDAYS_DATA[dateStr];
+      const holiday = holidaysData[dateStr];
       
       // 法定节假日或调休日
       const isStatutoryHoliday = holiday && !holiday.isWorkingDay;
