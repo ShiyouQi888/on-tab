@@ -16,8 +16,15 @@ export const authService = {
   async signOut() {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    // 注销时不一定要清除本地所有数据，但可以根据需求选择是否清空
-    // 如果是多用户设备，建议清空或在查询时严格过滤 userId
+  },
+
+  /** 发送密码重置邮件 */
+  async resetPasswordForEmail(email: string) {
+    const redirectTo = window.location.origin;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo,
+    });
+    if (error) throw error;
   },
 
   async getCurrentUser() {
