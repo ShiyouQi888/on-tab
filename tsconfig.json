@@ -18,5 +18,6 @@
     "types": ["chrome", "vite/client"]
   },
   "include": ["src", "background.ts"],
+  "exclude": ["src/test"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

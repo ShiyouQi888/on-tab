@@ -58,7 +58,7 @@ console.log(`\n==========`);
 console.log(`Total: ${passed + failed} | Passed: ${passed} | Failed: ${failed}`);
 if (failed > 0) {
   console.error('Some tests FAILED!');
-  process.exit(1);
+  throw new Error(`${failed} test(s) failed`);
 } else {
   console.log('All tests passed! 🎉');
 }
