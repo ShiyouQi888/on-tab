@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useTranslation } from 'react-i18next';
 import { db, type Bookmark, type Category } from './db/db';
-import type { AppUser, ConfirmConfig } from './types';
+import type { AppUser, ConfirmConfig, SearchEngine } from './types';
 import { bookmarkService } from './services/bookmarkService';
 import { authService } from './services/authService';
 import { syncService } from './services/syncService';
@@ -13,6 +13,10 @@ import { ConfirmModal } from './components/ConfirmModal';
 import { ContextMenu } from './components/ContextMenu';
 import { Toast, type ToastType } from './components/Toast';
 import { CalendarModal } from './components/CalendarModal';
+import { SearchBar } from './components/SearchBar';
+import { ClockWidget } from './components/ClockWidget';
+import { Sidebar } from './components/Sidebar';
+import { BookmarkGrid } from './components/BookmarkGrid';
 import { 
   Plus, 
   Search, 
@@ -71,7 +75,7 @@ import {
   Quote,
 } from 'lucide-react';
 
-const SEARCH_ENGINES = [
+const SEARCH_ENGINES: SearchEngine[] = [
   { id: 'bing', url: 'https://www.bing.com/search?q=', icon: 'https://www.google.com/s2/favicons?domain=bing.com&sz=64' },
   { id: 'baidu', url: 'https://www.baidu.com/s?wd=', icon: 'https://www.google.com/s2/favicons?domain=baidu.com&sz=64' },
   { id: 'google', url: 'https://www.google.com/search?q=', icon: 'https://www.google.com/s2/favicons?domain=google.com&sz=64' },
@@ -128,7 +132,6 @@ function App() {
 
   const [syncing, setSyncing] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
-  const [currentTime, setCurrentTime] = useState(new Date());
   const [weather, setWeather] = useState<{ temp: number; condition: string; icon: any }>({ temp: 24, condition: t('weather.cloudy'), icon: Cloud });
   const [wallpaper, setWallpaper] = useState(localStorage.getItem('app-wallpaper') || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
   const [isZenMode, setIsZenMode] = useState(localStorage.getItem('app-zen-mode') === 'true');
@@ -266,11 +269,6 @@ function App() {
       };
     }
   }, [user]);
-
-  useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     // 模拟天气数据
@@ -420,7 +418,7 @@ function App() {
     }
   };
 
-  const handleEditCategory = (cat: any) => {
+  const handleEditCategory = (cat: Category) => {
     setEditingCategory(cat);
     setNewCategoryName(cat.name);
     setSelectedIconId(cat.icon || 'home');
@@ -508,276 +506,61 @@ function App() {
       
       {/* Left Sidebar Navigation */}
       {!isZenMode && (
-        <div className="fixed left-6 top-1/2 -translate-y-1/2 w-16 max-h-[calc(100vh-48px)] bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl py-6 flex flex-col items-center z-40 group hover:w-48 transition-all duration-300 overflow-hidden shadow-2xl opacity-20 hover:opacity-100">
-          <div 
-            onClick={() => !user ? setIsAuthOpen(true) : setIsSettingsOpen(true)}
-            className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-6 cursor-pointer hover:bg-white/30 transition-colors shrink-0 overflow-hidden"
-          >
-            {userAvatar ? (
-              <img src={userAvatar} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (            <User className="text-white" size={24} />
-            )}
-          </div>
-          
-          <div className="w-8 h-[1px] bg-white/10 mb-4 shrink-0" />
-
-          <div className="flex-1 w-full flex flex-col items-start gap-2 overflow-y-auto overflow-x-hidden no-scrollbar">
-            <button 
-              onClick={() => setSelectedCategoryId(undefined)}
-              className={`w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg transition-all duration-300 ${!selectedCategoryId ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
-            >
-              <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-                <Grid3X3 size={20} />
-              </div>
-              <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
-                {t('nav.allBookmarks')}
-              </span>
-            </button>
-
-            {categories.map(cat => (
-              <div
-                key={cat.id}
-                className="w-[calc(100%-16px)] mx-2 relative group/cat"
-              >
-                <button
-                  onClick={() => setSelectedCategoryId(cat.id)}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    handleEditCategory(cat);
-                  }}
-                  className={`w-full flex items-center py-2 rounded-lg transition-all duration-300 ${selectedCategoryId === cat.id ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
-                >
-                  <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-                    {getCategoryIcon(cat.icon)}
-                  </div>
-                  <span className="whitespace-nowrap font-medium text-sm truncate opacity-0 group-hover:opacity-100 transition-all duration-300 flex-1 text-left ml-1">
-                    {cat.name}
-                  </span>
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div className="w-8 h-[1px] bg-white/10 my-4 shrink-0" />
-          
-          <button 
-            onClick={() => {
-              setEditingCategory(null);
-              setNewCategoryName('');
-              setSelectedIconId('home');
-              setIsCategoryModalOpen(true);
-            }}
-            className="w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300"
-          >
-            <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-              <PlusCircle size={20} />
-            </div>
-            <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
-              {t('nav.addCategory')}
-            </span>
-          </button>
-
-          <div className="mt-auto space-y-2 w-full">
-            <button 
-              onClick={() => {
-                const nextLang = i18n.language.startsWith('zh') ? 'en' : 'zh';
-                i18n.changeLanguage(nextLang);
-              }}
-              className="w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300 group/nav"
-              title={t('nav.switchLang')}
-            >
-              <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-                <Languages size={20} className="group-hover/nav:scale-110 transition-transform" />
-              </div>
-              <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
-                {t('nav.switchLangName')}
-              </span>
-            </button>
-
-            <button 
-              onClick={() => user ? handleSync() : setIsAuthOpen(true)}
-              disabled={syncing}
-              className={`w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300 group/nav ${syncing ? 'animate-pulse' : ''}`}
-              title={t('nav.syncNow')}
-            >
-              <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-                <Cloud size={20} className={`${syncing ? 'animate-spin' : 'group-hover/nav:scale-110'} transition-transform`} />
-              </div>
-              <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
-                {t('nav.syncNow')}
-              </span>
-            </button>
-
-            <button 
-              onClick={() => setIsSettingsOpen(true)}
-              className="w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg text-white/60 hover:bg-white/10 hover:text-white transition-all duration-300 group/nav"
-              title={t('nav.settings')}
-            >
-              <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
-                <Settings size={20} className="group-hover/nav:rotate-90 transition-transform duration-500" />
-              </div>
-              <span className="whitespace-nowrap font-medium text-sm opacity-0 group-hover:opacity-100 transition-all duration-300 ml-1">
-                {t('nav.settings')}
-              </span>
-            </button>
-          </div>
-        </div>
+        <Sidebar
+          user={user}
+          userAvatar={userAvatar}
+          categories={categories}
+          selectedCategoryId={selectedCategoryId}
+          syncing={syncing}
+          onCategorySelect={setSelectedCategoryId}
+          onAddCategory={() => {
+            setEditingCategory(null);
+            setNewCategoryName('');
+            setSelectedIconId('home');
+            setIsCategoryModalOpen(true);
+          }}
+          onEditCategory={handleEditCategory}
+          onAuthOpen={() => setIsAuthOpen(true)}
+          onSettingsOpen={() => setIsSettingsOpen(true)}
+          onSync={handleSync}
+          getCategoryIcon={getCategoryIcon}
+        />
       )}
 
       {/* Main Content Area */}
       <div className={`w-full flex flex-row items-start justify-center gap-12 relative z-10 pt-[5vh] pr-8 ${isZenMode ? 'pl-8' : 'pl-24'}`}>
         <main className={`flex-1 flex flex-col items-center justify-start max-w-[1200px] w-full px-4 ${isZenMode ? 'h-[90vh]' : ''}`}>
-          {/* Large Clock */}
-          <div className="mb-8 flex flex-col items-center relative">
-            <div className="relative">
-              <h1 className="text-[120px] font-bold text-white leading-none tracking-tighter drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)] select-none">
-                {currentTime.toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit', hour12: false })}
-              </h1>
-              {/* Weather info at the bottom-right of the time */}
-              <div className="absolute left-[calc(100%+0.5rem)] bottom-6 flex items-center gap-2 px-3 py-1 bg-black/20 backdrop-blur-md rounded-full border border-white/10 opacity-90 whitespace-nowrap">
-                <div className="flex items-center justify-center text-white animate-pulse">
-                  <weather.icon size={14} />
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-bold text-white">
-                    {weather.temp}°C
-                  </span>
-                  <span className="text-[10px] text-white/80 font-medium">
-                    {weather.condition}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div 
-              className="flex items-center gap-3 mt-2 px-6 py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/10 shadow-lg cursor-pointer hover:bg-black/30 transition-all active:scale-95"
-              onClick={() => setIsCalendarOpen(true)}
-            >
-              <span className="text-lg font-medium text-white/90 tracking-widest uppercase">
-                {currentTime.toLocaleDateString(i18n.language, { month: 'long', day: 'numeric', weekday: 'long' })}
-              </span>
-            </div>
-          </div>
+          {/* Large Clock (独立组件，1s 刷新不触发 App 重渲染) */}
+          <ClockWidget
+            locale={i18n.language}
+            weather={weather}
+            onCalendarOpen={() => setIsCalendarOpen(true)}
+          />
 
           {/* Search Bar */}
-          <div className="w-full max-w-[700px] mb-12 relative group z-50">
-            <div className="relative flex items-center bg-white/70 backdrop-blur-md rounded-2xl shadow-lg border border-white/40 transition-all overflow-visible p-2 group-focus-within:bg-white/80 group-focus-within:border-white/60">
-              <div className="relative flex items-center">
-                <button 
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsSearchEngineMenuOpen(!isSearchEngineMenuOpen);
-                  }}
-                  className="flex items-center gap-2 px-1 py-1 hover:bg-black/5 rounded-xl transition-colors shrink-0 z-20"
-                >
-                  <div className="w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center bg-white/20 border border-white/20">
-                    <img src={selectedSearchEngine.icon} alt="" className="w-full h-full object-cover pointer-events-none" />
-                  </div>
-                  <div className={`w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-gray-500 transition-transform duration-300 ${isSearchEngineMenuOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {isSearchEngineMenuOpen && (
-                  <>
-                    <div className="fixed inset-0 z-[60]" onClick={() => setIsSearchEngineMenuOpen(false)} />
-                    <div className="absolute left-0 top-[calc(100%+12px)] w-[min(600px,calc(100vw-48px))] bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/40 p-6 z-[70] animate-in fade-in zoom-in-95 duration-200 origin-top-left">
-                      <div className="grid grid-cols-4 sm:grid-cols-6 gap-6">
-                        {SEARCH_ENGINES.map(engine => (
-                          <button
-                            key={engine.id}
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedSearchEngine(engine);
-                              setIsSearchEngineMenuOpen(false);
-                            }}
-                            className="flex flex-col items-center gap-3 group/item"
-                          >
-                            <div className={`w-14 h-14 flex items-center justify-center rounded-2xl transition-all duration-300 overflow-hidden ${selectedSearchEngine.id === engine.id ? 'bg-white shadow-md scale-110 ring-2 ring-blue-500/20' : 'bg-white/40 hover:bg-white/60 group-hover/item:shadow-lg group-hover/item:-translate-y-1'}`}>
-                              <img src={engine.icon} alt="" className="w-full h-full object-cover" />
-                            </div>
-                            <span className={`text-xs font-bold transition-colors ${selectedSearchEngine.id === engine.id ? 'text-blue-600' : 'text-gray-700 group-hover/item:text-gray-900'}`}>
-                              {t('search.engines.' + engine.id)}
-                            </span>
-                          </button>
-                        ))}
-                        <button
-                          type="button"
-                          className="flex flex-col items-center gap-3 group/item"
-                        >
-                          <div className="w-14 h-14 flex items-center justify-center rounded-2xl bg-blue-500/10 border-2 border-dashed border-blue-500/30 hover:bg-blue-500 hover:border-blue-500 transition-all duration-300 group-hover/item:shadow-lg group-hover/item:-translate-y-1 group/add">
-                            <Plus size={24} className="text-blue-500 group-hover/add:text-white transition-colors" />
-                          </div>
-                          <span className="text-xs font-bold text-blue-600 group-hover/item:text-blue-700">
-                            {t('search.addEngine')}
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <input
-                type="text"
-                placeholder={t('search.placeholder')}
-                className="flex-1 bg-transparent border-none outline-none px-4 py-2 text-gray-800 placeholder:text-gray-500 text-[16px] font-bold"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && searchQuery) {
-                    const query = searchQuery.trim();
-                    const isUrl = query.includes('.') && !query.includes(' ');
-                    if (isUrl) {
-                      const url = query.startsWith('http') ? query : `https://${query}`;
-                      window.location.href = url;
-                    } else {
-                      window.location.href = `${selectedSearchEngine.url}${encodeURIComponent(query)}`;
-                    }
-                  }
-                }}
-              />
-            </div>
-          </div>
+          <SearchBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedEngine={selectedSearchEngine}
+            onEngineChange={(engine) => {
+              setSelectedSearchEngine(engine);
+              setIsSearchEngineMenuOpen(false);
+            }}
+            isEngineMenuOpen={isSearchEngineMenuOpen}
+            onEngineMenuToggle={setIsSearchEngineMenuOpen}
+            engines={SEARCH_ENGINES}
+          />
 
           {/* Shortcut Grid - Hidden in Zen Mode */}
           {!isZenMode && (
-            <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-y-16 gap-x-14 w-full max-w-[1400px] justify-items-center mx-auto">
-              {bookmarks?.map(bookmark => (
-                <a 
-                  key={bookmark.id} 
-                  href={bookmark.url}
-                  className="flex flex-col items-center group relative cursor-pointer no-underline w-full max-w-[90px]"
-                  onContextMenu={(e) => handleContextMenu(e, bookmark)}
-                >
-                  <div className="w-18 h-18 bg-white rounded-2xl flex items-center justify-center mb-4 group-hover:scale-105 group-hover:shadow-xl transition-all duration-300 relative overflow-hidden shadow-lg border border-black/5">
-                    {bookmark.icon ? (
-                      <img src={bookmark.icon} alt="" className="w-full h-full object-cover" onError={(e) => {
-                        (e.target as HTMLImageElement).src = `https://www.google.com/s2/favicons?domain=${new URL(bookmark.url).hostname}&sz=128`;
-                        (e.target as HTMLImageElement).className = "w-10 h-10 object-contain";
-                      }} />
-                    ) : (
-                      <Globe size={32} className="text-gray-400" />
-                    )}
-                  </div>
-                  <span className="text-[13px] text-white font-bold w-full truncate text-center px-1 drop-shadow-md">
-                    {bookmark.title}
-                  </span>
-                </a>
-              ))}
-
-              <div 
-                className="flex flex-col items-center group cursor-pointer w-full max-w-[90px]"
-                onClick={() => {
-                  setEditingBookmark(undefined);
-                  setIsFormOpen(true);
-                }}
-              >
-                <div className="w-18 h-18 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-4 group-hover:bg-white/30 group-hover:scale-105 transition-all duration-300 shadow-lg border border-white/20">
-                  <Plus size={36} className="text-white/90" />
-                </div>
-                <span className="text-[13px] text-white font-bold drop-shadow-md">{t('common.add')}</span>
-              </div>
-            </div>
+            <BookmarkGrid
+              bookmarks={bookmarks}
+              onAdd={() => {
+                setEditingBookmark(undefined);
+                setIsFormOpen(true);
+              }}
+              onContextMenu={handleContextMenu}
+            />
           )}
 
           {/* Zen Mode Bottom Widgets */}
