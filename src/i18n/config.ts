@@ -42,6 +42,9 @@ const resources = {
       search: {
         placeholder: 'Search bookmarks or enter URL',
         addEngine: 'Add Engine',
+        search: 'Search',
+        openUrl: 'Open URL',
+        searchEngine: 'Search',
         engines: {
           bing: 'Bing',
           baidu: 'Baidu',
@@ -391,6 +394,9 @@ const resources = {
       search: {
         placeholder: '输入搜索内容或网址',
         addEngine: '添加引擎',
+        search: '搜索',
+        openUrl: '打开网址',
+        searchEngine: '搜索',
         engines: {
           bing: '必应',
           baidu: '百度',

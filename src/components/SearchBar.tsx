@@ -1,7 +1,8 @@
-import React, { memo } from 'react';
+import React, { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Plus } from 'lucide-react';
+import { Plus, Search, ArrowRight, Globe } from 'lucide-react';
 import type { SearchEngine } from '../types';
+import { resolveSearchInput } from '../utils/searchUtils';
 
 interface SearchBarProps {
   searchQuery: string;
@@ -24,15 +25,19 @@ export const SearchBar = memo(function SearchBar({
 }: SearchBarProps) {
   const { t } = useTranslation();
 
+  // 实时分析用户输入，用于显示导航方式提示
+  const searchResult = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+    return resolveSearchInput(searchQuery, selectedEngine.url);
+  }, [searchQuery, selectedEngine.url]);
+
   const handleSearch = () => {
     const query = searchQuery.trim();
     if (!query) return;
-    const isUrl = query.includes('.') && !query.includes(' ');
-    if (isUrl) {
-      const url = query.startsWith('http') ? query : `https://${query}`;
-      window.location.href = url;
-    } else {
-      window.location.href = `${selectedEngine.url}${encodeURIComponent(query)}`;
+
+    const result = resolveSearchInput(query, selectedEngine.url);
+    if (result.targetUrl) {
+      window.location.href = result.targetUrl;
     }
   };
 
@@ -106,7 +111,47 @@ export const SearchBar = memo(function SearchBar({
               handleSearch();
             }
           }}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
         />
+
+        {/* 导航方式提示：URL 打开 vs 搜索引擎搜索 */}
+        {searchResult && searchQuery.trim() && (
+          <div className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 mr-1 rounded-xl text-xs font-bold transition-all duration-200 ${
+            searchResult.mode === 'url'
+              ? 'bg-blue-100/80 text-blue-700'
+              : 'bg-gray-100/80 text-gray-600'
+          }`}>
+            {searchResult.mode === 'url' ? (
+              <>
+                <Globe size={14} />
+                <span className="hidden sm:inline">{t('search.openUrl')}</span>
+              </>
+            ) : (
+              <>
+                <Search size={14} />
+                <span className="hidden sm:inline">{t('search.searchEngine')}</span>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* 搜索按钮 */}
+        <button
+          type="button"
+          onClick={handleSearch}
+          disabled={!searchQuery.trim()}
+          className="shrink-0 w-10 h-10 flex items-center justify-center rounded-xl bg-blue-500 text-white hover:bg-blue-600 active:scale-95 transition-all duration-200 disabled:opacity-40 disabled:active:scale-100"
+          aria-label={t('search.search')}
+        >
+          {searchResult?.mode === 'url' ? (
+            <ArrowRight size={18} />
+          ) : (
+            <Search size={18} />
+          )}
+        </button>
       </div>
     </div>
   );
