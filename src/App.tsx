@@ -134,6 +134,8 @@ function App() {
   const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
   const [weather, setWeather] = useState<{ temp: number; condition: string; icon: any }>({ temp: 24, condition: t('weather.cloudy'), icon: Cloud });
   const [wallpaper, setWallpaper] = useState(localStorage.getItem('app-wallpaper') || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+  const [prevWallpaper, setPrevWallpaper] = useState<string | null>(null);
+  const [prevOpacity, setPrevOpacity] = useState(1);
   const [isZenMode, setIsZenMode] = useState(localStorage.getItem('app-zen-mode') === 'true');
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
@@ -145,23 +147,79 @@ function App() {
     localStorage.setItem('app-zen-mode', String(newMode));
   };
 
+  // 壁纸切换交叉淡入淡出动画
+  React.useEffect(() => {
+    if (!prevWallpaper) return;
+    setPrevOpacity(1);
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setPrevOpacity(0));
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [prevWallpaper]);
+
+  const handlePrevTransitionEnd = () => {
+    if (prevOpacity === 0) setPrevWallpaper(null);
+  };
+
   const changeRandomWallpaper = () => {
     const curatedWallpapers = [
-      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-      'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-      'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-      'https://images.unsplash.com/photo-1493246507139-91e8bef99c02?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-      'https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-      'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-      'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-      'https://images.unsplash.com/photo-1433086566081-6428ca7af53f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-      'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-      'https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
-      'https://images.unsplash.com/photo-1426604966848-d7adac402bff?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80',
+      // === 山脉 & 自然风光 ===
+      'https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 冰川湖
+      'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 日出山峰
+      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 湖边小屋
+      'https://images.unsplash.com/photo-1470770841072-f978cf4d019e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 秋色山谷
+      'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 连绵山丘
+      'https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 金色麦田
+      'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 秋日草原
+      'https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 海边悬崖
+      'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 森林光影
+      'https://images.unsplash.com/photo-1426604966848-d7adac402bff?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 巍峨雪峰
+      'https://images.unsplash.com/photo-1493246507139-91e8bef99c02?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 迷雾山林
+      'https://images.unsplash.com/photo-1433086566081-6428ca7af53f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 瀑布溪流
+      'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 梦幻森林
+      'https://images.unsplash.com/photo-1418065460487-3e41a6c84dc5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 海岸礁石
+      'https://images.unsplash.com/photo-1502082553048-f009c37129b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 樱花树下
+      // === 海洋 & 水域 ===
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 热带海滩
+      'https://images.unsplash.com/photo-1518837695005-2083093ee35b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 海浪卷起
+      'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 清澈海水
+      'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 海边日落
+      'https://images.unsplash.com/photo-1505144808419-1957a94ca61e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 镜面湖泊
+      'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 山涧瀑布
+      // === 极光 & 星空 ===
+      'https://images.unsplash.com/photo-1483347756197-71ef80e95f73?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 绿色极光
+      'https://images.unsplash.com/photo-1579033461380-adb47c3eb938?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 北极光小屋
+      'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 银河星空
+      'https://images.unsplash.com/photo-1465101162946-4377e57745c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 繁星满天
+      // === 城市 & 建筑 ===
+      'https://images.unsplash.com/photo-1514565131-fce0801e5785?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 都市夜景
+      'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 城市天际线
+      'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 黄昏都市
+      'https://images.unsplash.com/photo-1496568816309-51d7c20e3b21?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 东京夜景
+      // === 沙漠 & 荒野 ===
+      'https://images.unsplash.com/photo-1509316785289-025f5b846b35?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 沙漠沙丘
+      'https://images.unsplash.com/photo-1542401886-65d6c61db217?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 戈壁荒漠
+      'https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 红岩峡谷
+      // === 四季花卉 ===
+      'https://images.unsplash.com/photo-1490750967868-88aa4f44baee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 郁金香花海
+      'https://images.unsplash.com/photo-1499002238440-d264edd596ec?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 薰衣草田
+      'https://images.unsplash.com/photo-1462275646964-a0e3386b89fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 樱花盛放
+      'https://images.unsplash.com/photo-1444464666168-49d633b86797?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 秋叶小径
+      // === 静谧 & 极简 ===
+      'https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 雪山星空
+      'https://images.unsplash.com/photo-1518173946687-a1e4e4e4e4e4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 迷雾森林路
+      'https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 晨光山脉
+      'https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 富士山
+      'https://images.unsplash.com/photo-1500534623283-312aade485b7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 日落剪影
+      'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 晨雾山峦
+      // === 更多精选 ===
+      'https://images.unsplash.com/photo-1542281286-9e0a16bb7366?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 巨浪礁石
+      'https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 薄雾山脉
+      'https://images.unsplash.com/photo-1510798831971-661eb04b3739?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 秋色森林
+      'https://images.unsplash.com/photo-1485470733090-0aae1788d5af?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 北极光山脉
+      'https://images.unsplash.com/photo-1500530855694-4565a5e7e4d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 翠绿山谷
+      'https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 晨曦山谷
+      'https://images.unsplash.com/photo-1446329813274-7c9036bd9a1f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80', // 蜿蜒公路
     ];
     
     let nextWallpaper = curatedWallpapers[Math.floor(Math.random() * curatedWallpapers.length)];
@@ -172,6 +230,7 @@ function App() {
       attempts++;
     }
     
+    setPrevWallpaper(wallpaper);
     setWallpaper(nextWallpaper);
     localStorage.setItem('app-wallpaper', nextWallpaper);
     showToast(t('toast.wallpaperUpdated'), 'info');
@@ -432,8 +491,19 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-cover bg-center bg-no-repeat flex flex-col items-center p-4 relative transition-all duration-700 ease-in-out"
-         style={{ backgroundImage: `url("${wallpaper}")` }}>
+    <div className="min-h-screen flex flex-col items-center p-4 relative">
+      
+      {/* 前一张壁纸层（交叉淡出） */}
+      {prevWallpaper && (
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-700 ease-in-out pointer-events-none"
+          style={{ backgroundImage: `url("${prevWallpaper}")`, opacity: prevOpacity }}
+          onTransitionEnd={handlePrevTransitionEnd}
+        />
+      )}
+      {/* 当前壁纸层 */}
+      <div className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10"
+           style={{ backgroundImage: `url("${wallpaper}")` }} />
       
       {/* Wallpaper Pull Rope (支持鼠标+触屏) */}
       <div 
@@ -708,6 +778,7 @@ function App() {
           currentWallpaper={wallpaper}
           initialTab={initialSettingsTab}
           onWallpaperChange={(url) => {
+            setPrevWallpaper(wallpaper);
             setWallpaper(url);
             localStorage.setItem('app-wallpaper', url);
             showToast(t('toast.wallpaperUpdated'), 'success');
