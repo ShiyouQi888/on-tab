@@ -43,10 +43,10 @@ export const Sidebar = memo(function Sidebar({
   const { t, i18n } = useTranslation();
 
   return (
-    <div className="fixed left-6 top-1/2 -translate-y-1/2 w-16 max-h-[calc(100vh-48px)] bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl py-6 flex flex-col items-center z-40 group hover:w-48 transition-all duration-300 overflow-hidden shadow-2xl opacity-20 hover:opacity-100">
+    <div className="fixed left-6 top-1/2 -translate-y-1/2 w-16 max-h-[calc(100vh-48px)] bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl py-6 flex flex-col items-center z-40 group hover:w-48 transition-all duration-300 overflow-hidden shadow-2xl opacity-60 hover:opacity-100">
       <div
         onClick={() => !user ? onAuthOpen() : onSettingsOpen()}
-        className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-6 cursor-pointer hover:bg-white/30 transition-colors shrink-0 overflow-hidden"
+        className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-6 cursor-pointer hover:bg-white/30 transition-colors shrink-0 overflow-hidden ring-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
       >
         {userAvatar ? (
           <img src={userAvatar} alt="Avatar" className="w-full h-full object-cover" />
@@ -60,7 +60,7 @@ export const Sidebar = memo(function Sidebar({
       <div className="flex-1 w-full flex flex-col items-start gap-2 overflow-y-auto overflow-x-hidden no-scrollbar">
         <button
           onClick={() => onCategorySelect(undefined)}
-          className={`w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg transition-all duration-300 ${!selectedCategoryId ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
+          className={`w-[calc(100%-16px)] mx-2 flex items-center py-2 rounded-lg transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${!selectedCategoryId ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
         >
           <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
             <Grid3X3 size={20} />
@@ -81,7 +81,7 @@ export const Sidebar = memo(function Sidebar({
                 e.preventDefault();
                 onEditCategory(cat);
               }}
-              className={`w-full flex items-center py-2 rounded-lg transition-all duration-300 ${selectedCategoryId === cat.id ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
+              className={`w-full flex items-center py-2 rounded-lg transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${selectedCategoryId === cat.id ? 'bg-white/20 text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'}`}
             >
               <div className="w-8 h-10 flex justify-center items-center shrink-0 ml-2">
                 {getCategoryIcon(cat.icon)}

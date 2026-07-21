@@ -258,6 +258,9 @@ const resources = {
         update: 'Update Bookmark',
         deleteConfirm: 'Are you sure you want to delete this bookmark?',
         deleteWarning: 'This action cannot be undone.',
+        emptyTitle: 'No bookmarks yet',
+        emptyDesc: 'Click the button below to add your first bookmark',
+        addFirst: 'Add Your First Bookmark',
       },
       category: {
         addTitle: 'New Category',
@@ -617,6 +620,9 @@ const resources = {
         update: '更新书签',
         deleteConfirm: '确定要删除这个书签吗？',
         deleteWarning: '删除后将无法恢复。',
+        emptyTitle: '还没有书签',
+        emptyDesc: '点击下方按钮添加您的第一个书签',
+        addFirst: '添加第一个书签',
       },
       category: {
         addTitle: '新建分类',

@@ -42,8 +42,8 @@ export const SearchBar = memo(function SearchBar({
   };
 
   return (
-    <div className="w-full max-w-[700px] mb-12 relative group z-50">
-      <div className="relative flex items-center bg-white/70 backdrop-blur-md rounded-2xl shadow-lg border border-white/40 transition-all overflow-visible p-2 group-focus-within:bg-white/80 group-focus-within:border-white/60">
+    <div className="w-full max-w-[700px] mb-12 relative z-50">
+      <div className="relative flex items-center bg-white/70 backdrop-blur-md rounded-2xl shadow-lg border border-white/40 transition-all overflow-visible p-2 focus-within:bg-white/80 focus-within:border-white/60">
         <div className="relative flex items-center">
           <button
             type="button"

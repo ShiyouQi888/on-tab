@@ -435,28 +435,29 @@ function App() {
     <div className="min-h-screen bg-cover bg-center bg-no-repeat flex flex-col items-center p-4 relative transition-all duration-700 ease-in-out"
          style={{ backgroundImage: `url("${wallpaper}")` }}>
       
-      {/* Wallpaper Pull Rope */}
+      {/* Wallpaper Pull Rope (支持鼠标+触屏) */}
       <div 
-        className="fixed top-0 right-48 z-[60] flex flex-col items-center cursor-ns-resize group"
-        onMouseDown={(e) => {
+        className="fixed top-0 right-48 z-[60] flex flex-col items-center cursor-ns-resize group touch-none select-none"
+        onPointerDown={(e) => {
+          e.currentTarget.setPointerCapture(e.pointerId);
           setIsPulling(true);
           const startY = e.clientY;
-          const onMouseMove = (moveEvent: MouseEvent) => {
+          const onPointerMove = (moveEvent: PointerEvent) => {
             const dist = Math.max(0, Math.min(150, moveEvent.clientY - startY));
             setPullDistance(dist);
           };
-          const onMouseUp = (upEvent: MouseEvent) => {
+          const onPointerUp = (upEvent: PointerEvent) => {
             const finalDist = upEvent.clientY - startY;
             if (finalDist > 100) {
               changeRandomWallpaper();
             }
             setPullDistance(0);
             setIsPulling(false);
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup', onMouseUp);
+            window.removeEventListener('pointermove', onPointerMove);
+            window.removeEventListener('pointerup', onPointerUp);
           };
-          window.addEventListener('mousemove', onMouseMove);
-          window.addEventListener('mouseup', onMouseUp);
+          window.addEventListener('pointermove', onPointerMove);
+          window.addEventListener('pointerup', onPointerUp);
         }}
       >
         {/* Rope Line */}
@@ -528,8 +529,8 @@ function App() {
       )}
 
       {/* Main Content Area */}
-      <div className={`w-full flex flex-row items-start justify-center gap-12 relative z-10 pt-[5vh] pr-8 ${isZenMode ? 'pl-8' : 'pl-24'}`}>
-        <main className={`flex-1 flex flex-col items-center justify-start max-w-[1200px] w-full px-4 ${isZenMode ? 'h-[90vh]' : ''}`}>
+      <div className={`w-full flex flex-row items-start justify-center gap-12 relative z-10 pt-[5vh] pr-8 transition-all duration-300 ${isZenMode ? 'pl-8' : 'pl-24'}`}>
+        <main className={`flex-1 flex flex-col items-center justify-start max-w-[1200px] w-full px-4 transition-all duration-300 ${isZenMode ? 'h-[90vh]' : ''}`}>
           {/* Large Clock (独立组件，1s 刷新不触发 App 重渲染) */}
           <ClockWidget
             locale={i18n.language}
@@ -591,7 +592,7 @@ function App() {
         </button>
       </div>
 
-      <footer className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30">
+      <footer className="fixed bottom-6 left-1/2 -translate-x-1/2 z-30 hidden md:block">
         <div className="flex items-center gap-2 px-4 py-2 bg-black/10 backdrop-blur-sm rounded-full border border-white/5 transition-opacity hover:opacity-100 opacity-60">
           <span className="text-[11px] text-white/80 font-medium tracking-wide">
             © {new Date().getFullYear()} On Tab · 
