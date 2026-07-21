@@ -39,9 +39,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onClose, onSuccess }) => {
         await authService.signUp(email, password);
         setSuccessMsg(t('auth.signUpSuccess'));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Auth error:', err);
-      let message = err.message || t('auth.opFailed');
+      let message = (err as Error).message || t('auth.opFailed');
       if (message === 'Failed to fetch') {
         message = t('auth.networkError');
       }

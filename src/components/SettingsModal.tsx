@@ -22,6 +22,8 @@ import { bookmarkService } from '../services/bookmarkService';
 import { authService } from '../services/authService';
 import { ConfirmModal } from './ConfirmModal';
 import { AuthModal } from './AuthModal';
+import type { AppUser, ConfirmConfig } from '../types';
+import type { Category } from '../db/db';
 import { 
   Download, 
   Upload, 
@@ -50,11 +52,11 @@ import {
 
 interface SettingsModalProps {
   onClose: () => void;
-  user: any;
+  user: AppUser | null;
   onAuthOpen: () => void;
   currentWallpaper: string;
   onWallpaperChange: (url: string) => void;
-  onUserUpdate?: (user: any) => void;
+  onUserUpdate?: (user: AppUser) => void;
   initialTab?: string;
 }
 
@@ -67,7 +69,7 @@ const AVATAR_STYLES = [
   { id: 'pixel-art', label: 'avatarPixel' },
 ];
 
-const SortableCategoryItem = ({ cat, onDelete }: { cat: any, onDelete: (id: string) => void }) => {
+const SortableCategoryItem = ({ cat, onDelete }: { cat: Category; onDelete: (id: string) => void }) => {
   const { t } = useTranslation();
   const {
     attributes,
@@ -119,15 +121,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
   const fileInputRef = useRef<HTMLInputElement>(null);
   const wallpaperFileRef = useRef<HTMLInputElement>(null);
   const htmlInputRef = useRef<HTMLInputElement>(null);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
-  const [activeTab, setActiveTab] = useState<'categories' | 'appearance' | 'migration' | 'feedback' | 'business' | 'contact' | 'about'>(
-    (initialTab as any) || 'categories'
+  type SettingsTab = 'categories' | 'appearance' | 'migration' | 'feedback' | 'business' | 'contact' | 'about';
+  const [activeTab, setActiveTab] = useState<SettingsTab>(
+    (initialTab as SettingsTab) || 'categories'
   );
 
   useEffect(() => {
     if (initialTab) {
-      setActiveTab(initialTab as any);
+      setActiveTab(initialTab as SettingsTab);
     }
   }, [initialTab]);
   const [customWallpaper, setCustomWallpaper] = useState(currentWallpaper);
@@ -162,12 +165,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ onClose, user, onA
     }
   };
 
-  const [confirmConfig, setConfirmConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    message: string;
-    onConfirm: () => void;
-  }>({
+  const [confirmConfig, setConfirmConfig] = useState<ConfirmConfig>({
     isOpen: false,
     title: '',
     message: '',

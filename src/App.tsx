@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useTranslation } from 'react-i18next';
-import { db, type Bookmark } from './db/db';
+import { db, type Bookmark, type Category } from './db/db';
+import type { AppUser, ConfirmConfig } from './types';
 import { bookmarkService } from './services/bookmarkService';
 import { authService } from './services/authService';
 import { syncService } from './services/syncService';
@@ -113,7 +114,7 @@ function App() {
   const [initialSettingsTab, setInitialSettingsTab] = useState<string>('categories');
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [selectedIconId, setSelectedIconId] = useState('home');
   const [editingBookmark, setEditingBookmark] = useState<Bookmark | undefined>();
@@ -122,7 +123,7 @@ function App() {
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [selectedSearchEngine, setSelectedSearchEngine] = useState(SEARCH_ENGINES[0]);
   const [isSearchEngineMenuOpen, setIsSearchEngineMenuOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const userAvatar = user?.user_metadata?.avatar_url;
 
   const [syncing, setSyncing] = useState(false);
@@ -161,8 +162,11 @@ function App() {
     ];
     
     let nextWallpaper = curatedWallpapers[Math.floor(Math.random() * curatedWallpapers.length)];
-    while (nextWallpaper === wallpaper) {
+    let attempts = 0;
+    const maxAttempts = 20;
+    while (nextWallpaper === wallpaper && attempts < maxAttempts) {
       nextWallpaper = curatedWallpapers[Math.floor(Math.random() * curatedWallpapers.length)];
+      attempts++;
     }
     
     setWallpaper(nextWallpaper);
@@ -170,12 +174,7 @@ function App() {
     showToast(t('toast.wallpaperUpdated'), 'info');
   };
 
-  const [confirmConfig, setConfirmConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    message: string;
-    onConfirm: () => void;
-  }>({
+  const [confirmConfig, setConfirmConfig] = useState<ConfirmConfig>({
     isOpen: false,
     title: '',
     message: '',
